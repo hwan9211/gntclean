@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>네이버 키워드 분석기 · 지앤티클린</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f7f5;--surface:#fff;--surface2:#f0f0ec;
+  --text:#1a1a18;--muted:#6b6b68;--border:#e0e0db;
+  --blue:#2563EB;--blue-light:#EFF6FF;--blue-text:#1D4ED8;
+  --green-light:#F0FDF4;--green-text:#166534;
+  --amber-light:#FFFBEB;--amber-text:#92400E;
+  --red-light:#FEF2F2;--red-text:#991B1B;
+  --gray-light:#F9FAFB;--gray-text:#374151;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Pretendard','Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── 상단 헤더 ── */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 2rem;height:56px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
+.topbar .logo{font-size:15px;font-weight:600;color:var(--blue);display:flex;align-items:center;gap:6px}
+.topbar .divider{width:1px;height:20px;background:var(--border);margin:0 4px}
+.topbar .subtitle{font-size:13px;color:var(--muted)}
+
+/* ── 검색 영역 ── */
+.hero{padding:2.5rem 2rem 1.5rem;max-width:900px;margin:0 auto}
+.hero h1{font-size:22px;font-weight:600;margin-bottom:6px}
+.hero p{font-size:14px;color:var(--muted);margin-bottom:1.5rem}
+.search-row{display:flex;gap:8px}
+.search-row input{flex:1;height:48px;border:1.5px solid var(--border);border-radius:12px;padding:0 16px;font-size:15px;outline:none;background:var(--surface);color:var(--text);transition:border .15s}
+.search-row input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.search-row button{height:48px;padding:0 24px;border:none;border-radius:12px;background:var(--blue);color:#fff;font-size:14px;font-weight:500;cursor:pointer;transition:background .15s;white-space:nowrap}
+.search-row button:hover{background:#1D4ED8}
+.search-row button:disabled{background:#c0c0bb;cursor:not-allowed}
+
+/* ── 빠른 검색 태그 ── */
+.quick-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.qtag{font-size:12px;padding:5px 13px;border-radius:99px;border:1px solid var(--border);color:var(--muted);cursor:pointer;background:var(--surface);transition:.15s}
+.qtag:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
+.qtag.active{border-color:var(--blue);color:var(--blue-text);background:var(--blue-light)}
+
+/* ── 본문 ── */
+.main{max-width:900px;margin:0 auto;padding:0 2rem 4rem}
+.divider-line{height:1px;background:var(--border);margin:1.5rem 0}
+
+/* ── 빈 상태 / 로딩 ── */
+.state-box{text-align:center;padding:5rem 0;color:var(--muted)}
+.state-box i{font-size:44px;display:block;margin-bottom:14px;color:var(--border)}
+.state-box p{font-size:15px;font-weight:500;color:var(--text);margin-bottom:6px}
+.state-box span{font-size:13px}
+.spinner{width:32px;height:32px;border:2.5px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .75s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── 결과 영역 ── */
+#resultArea{display:none}
+#resultArea.show{display:block}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.result-kw{font-size:20px;font-weight:600}
+.badge-row{display:flex;gap:6px;flex-wrap:wrap}
+.badge{font-size:11px;padding:3px 10px;border-radius:99px;font-weight:500}
+.badge-blue{background:var(--blue-light);color:var(--blue-text)}
+.badge-green{background:var(--green-light);color:var(--green-text)}
+.badge-amber{background:var(--amber-light);color:var(--amber-text)}
+.badge-red{background:var(--red-light);color:var(--red-text)}
+.badge-gray{background:var(--gray-light);color:var(--gray-text)}
+.result-meta{font-size:12px;color:var(--muted);margin-bottom:1.5rem}
+
+/* ── 섹션 타이틀 ── */
+.sec-title{font-size:13px;font-weight:500;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:5px}
+
+/* ── 메트릭 카드 그리드 ── */
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:1.5rem}
+.mcard{background:var(--surface2);border-radius:12px;padding:14px 16px}
+.mcard .ml{font-size:11px;color:var(--muted);margin-bottom:4px}
+.mcard .mv{font-size:21px;font-weight:600;color:var(--text)}
+.mcard .ms{font-size:11px;color:var(--muted);margin-top:2px}
+.mcard.accent .mv{color:var(--blue)}
+
+/* ── 카드 ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:1.5rem}
+
+/* ── 연관 키워드 바 ── */
+.kw-row{display:flex;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;gap:8px;color:var(--text)}
+.kw-row:last-child{border-bottom:none}
+.bar-bg{background:var(--surface2);border-radius:4px;height:7px;flex:1;min-width:60px}
+.bar-fill{height:100%;border-radius:4px;background:var(--blue)}
+.kw-name{min-width:120px;font-weight:500}
+.kw-vol{font-size:12px;color:var(--muted);min-width:60px;text-align:right}
+
+/* ── 인사이트 ── */
+.insight-row{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+.insight-row:last-child{margin-bottom:0}
+.insight-row span:last-child{font-size:13px;line-height:1.6}
+
+/* ── 탭 (상세 테이블) ── */
+.tab-wrap{display:flex;gap:2px;margin-bottom:16px;background:var(--surface2);padding:3px;border-radius:10px;width:fit-content}
+.tab-btn{padding:7px 16px;border-radius:8px;border:none;background:transparent;font-size:13px;color:var(--muted);cursor:pointer;font-weight:500;transition:.15s}
+.tab-btn.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.tab-content{display:none}
+.tab-content.on{display:block}
+
+/* ── 테이블 ── */
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table th{text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;font-weight:500;color:var(--muted)}
+.data-table td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text)}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:var(--surface2)}
+.data-table .num{font-variant-numeric:tabular-nums;text-align:right}
+.main-kw{font-weight:600;color:var(--blue)}
+
+/* ── 차트 ── */
+.chart-wrap{position:relative;height:200px;margin-bottom:0}
+
+/* ── 반응형 ── */
+@media(max-width:640px){
+  .topbar{padding:0 1rem}.hero,.main{padding-left:1rem;padding-right:1rem}
+  .grid4,.grid3{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}
+  .kw-name{min-width:90px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo"><i class="ti ti-search"></i>키워드 분석기</div>
+  <div class="divider"></div>
+  <div class="subtitle">지앤티클린 마케팅팀</div>
+</div>
+
+<div class="hero">
+  <h1>네이버 쇼핑 키워드 분석</h1>
+  <p>키워드를 입력하면 월간 검색량, 연관 키워드, 경쟁 강도를 실시간으로 조회합니다</p>
+  <div class="search-row">
+    <input type="text" id="kwInput" placeholder="예: 물티슈, 캡슐세제, 아기로션…" autocomplete="off" />
+    <button id="searchBtn" onclick="doSearch()"><i class="ti ti-search" style="font-size:15px;vertical-align:-2px"></i> 검색</button>
+  </div>
+  <div class="quick-tags" id="quickTags">
+    <span class="qtag" onclick="fillKw('물티슈')">물티슈</span>
+    <span class="qtag" onclick="fillKw('캡슐세제')">캡슐세제</span>
+    <span class="qtag" onclick="fillKw('아기물티슈')">아기물티슈</span>
+    <span class="qtag" onclick="fillKw('세탁세제')">세탁세제</span>
+    <span class="qtag" onclick="fillKw('아기로션')">아기로션</span>
+    <span class="qtag" onclick="fillKw('섬유유연제')">섬유유연제</span>
+    <span class="qtag" onclick="fillKw('주방세제')">주방세제</span>
+  </div>
+</div>
+
+<div class="main">
+  <div class="divider-line"></div>
+
+  <!-- 빈 상태 -->
+  <div id="emptyState" class="state-box">
+    <i class="ti ti-chart-bar-off"></i>
+    <p>키워드를 검색해주세요</p>
+    <span>월간 검색량, 경쟁 강도, 연관 키워드를 바로 확인할 수 있어요</span>
+  </div>
+
+  <!-- 로딩 -->
+  <div id="loadingState" style="display:none" class="state-box">
+    <div class="spinner"></div>
+    <p id="loadingMsg">데이터를 불러오는 중…</p>
+    <span>네이버 검색광고 API 조회 중</span>
+  </div>
+
+  <!-- 에러 -->
+  <div id="errorState" style="display:none" class="state-box">
+    <i class="ti ti-alert-circle" style="color:#EF4444"></i>
+    <p id="errorMsg">오류가 발생했습니다</p>
+    <span>잠시 후 다시 시도해주세요</span>
+  </div>
+
+  <!-- 결과 -->
+  <div id="resultArea">
+    <div class="result-header">
+      <div class="result-kw" id="rTitle"></div>
+      <div class="badge-row" id="rBadges"></div>
+    </div>
+    <div class="result-meta" id="rMeta"></div>
+
+    <!-- 검색량 요약 -->
+    <div class="sec-title"><i class="ti ti-chart-bar" style="font-size:14px"></i>검색량 요약 (메인 키워드)</div>
+    <div class="grid4" id="rMetrics"></div>
+
+    <!-- 탭: 전체 결과 표 / 트렌드 -->
+    <div class="card">
+      <div class="tab-wrap">
+        <button class="tab-btn on" onclick="switchTab('table')">연관 키워드 전체</button>
+        <button class="tab-btn" onclick="switchTab('trend')">월별 트렌드</button>
+      </div>
+
+      <div class="tab-content on" id="tabTable">
+        <div style="overflow-x:auto">
+          <table class="data-table" id="rTable">
+            <thead>
+              <tr>
+                <th>키워드</th>
+                <th class="num">월간 검색량</th>
+                <th class="num">PC</th>
+                <th class="num">모바일</th>
+                <th class="num">모바일 비율</th>
+                <th>경쟁 강도</th>
+                <th class="num">평균 CPC</th>
+              </tr>
+            </thead>
+            <tbody id="rTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tabTrend">
+        <p style="font-size:12px;color:var(--muted);margin-bottom:12px">네이버 데이터랩 기반 상대 검색량 추이 (메인 키워드 기준)</p>
+        <div class="chart-wrap">
+          <canvas id="trendChart" role="img" aria-label="월별 검색 트렌드"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- 연관 키워드 바 차트 -->
+    <div class="sec-title"><i class="ti ti-list" style="font-size:14px"></i>검색량 비교</div>
+    <div class="card">
+      <div id="rBarList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let trendChart = null;
+
+/* ── 탭 전환 ── */
+function switchTab(id) {
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('on', (i===0&&id==='table')||(i===1&&id==='trend')));
+  document.getElementById('tabTable').classList.toggle('on', id==='table');
+  document.getElementById('tabTrend').classList.toggle('on', id==='trend');
+}
+
+/* ── 빠른 검색 ── */
+function fillKw(kw) {
+  document.getElementById('kwInput').value = kw;
+  document.querySelectorAll('.qtag').forEach(t => t.classList.toggle('active', t.textContent===kw));
+  doSearch();
+}
+
+document.getElementById('kwInput').addEventListener('keydown', e => { if(e.key==='Enter') doSearch(); });
+
+/* ── 상태 관리 ── */
+function setState(s, msg='') {
+  ['emptyState','loadingState','errorState'].forEach(id => document.getElementById(id).style.display='none');
+  document.getElementById('resultArea').style.display = 'none';
+  if(s==='loading') { document.getElementById('loadingState').style.display='block'; document.getElementById('loadingMsg').textContent=msg||'데이터를 불러오는 중…'; }
+  else if(s==='error') { document.getElementById('errorState').style.display='block'; document.getElementById('errorMsg').textContent=msg; }
+  else if(s==='result') { document.getElementById('resultArea').style.display='block'; }
+  else { document.getElementById('emptyState').style.display='block'; }
+}
+
+/* ── 메인 검색 ── */
+async function doSearch() {
+  const kw = document.getElementById('kwInput').value.trim();
+  if(!kw) return;
+
+  const btn = document.getElementById('searchBtn');
+  btn.disabled = true;
+  setState('loading', `"${kw}" 조회 중…`);
+
+  try {
+    const res = await fetch(`/api/keyword?kw=${encodeURIComponent(kw)}`);
+    const data = await res.json();
+
+    if(!res.ok) throw new Error(data.error || '알 수 없는 오류');
+    if(!data.list || !data.list.length) throw new Error('검색 결과가 없습니다. 다른 키워드를 시도해보세요.');
+
+    renderResult(data);
+    setState('result');
+  } catch(e) {
+    setState('error', e.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/* ── 뱃지 ── */
+function sizeBadge(total) {
+  if(total>=50000) return ['badge-red','대형 키워드'];
+  if(total>=10000) return ['badge-amber','중형 키워드'];
+  return ['badge-green','소형 키워드'];
+}
+function compBadge(c) {
+  const map = {'높음':['badge-red','경쟁 높음'],'보통':['badge-amber','경쟁 보통'],'낮음':['badge-green','경쟁 낮음']};
+  return map[c] || ['badge-gray', c];
+}
+function compColor(c) {
+  if(c==='높음') return 'color:var(--red-text)';
+  if(c==='낮음') return 'color:var(--green-text)';
+  return 'color:var(--amber-text)';
+}
+
+/* ── 렌더링 ── */
+function renderResult(data) {
+  const list = data.list;
+  const main = list[0];
+
+  document.getElementById('rTitle').textContent = main.keyword;
+
+  const [sClass, sLabel] = sizeBadge(main.total);
+  const [cClass, cLabel] = compBadge(main.competition);
+  document.getElementById('rBadges').innerHTML =
+    `<span class="badge ${sClass}">${sLabel}</span>` +
+    `<span class="badge ${cClass}">${cLabel}</span>` +
+    `<span class="badge badge-blue">네이버 검색광고 API</span>`;
+
+  document.getElementById('rMeta').textContent =
+    `조회 시각: ${new Date().toLocaleString('ko-KR')} · 연관 키워드 ${list.length}개`;
+
+  /* 메트릭 카드 */
+  document.getElementById('rMetrics').innerHTML = `
+    <div class="mcard accent">
+      <div class="ml">월간 총 검색량</div>
+      <div class="mv">${main.total.toLocaleString()}</div>
+      <div class="ms">PC + 모바일</div>
+    </div>
+    <div class="mcard">
+      <div class="ml">PC 검색량</div>
+      <div class="mv">${main.pc.toLocaleString()}</div>
+      <div class="ms">${100-main.mobileRatio}%</div>
+    </div>
+    <div class="mcard">
+      <div class="ml">모바일 검색량</div>
+      <div class="mv">${main.mobile.toLocaleString()}</div>
+      <div class="ms">${main.mobileRatio}%</div>
+    </div>
+    <div class="mcard">
+      <div class="ml">평균 CPC</div>
+      <div class="mv" style="font-size:17px">${main.cpc!=='-' ? Number(main.cpc).toLocaleString()+'원' : '-'}</div>
+      <div class="ms">클릭당 비용</div>
+    </div>`;
+
+  /* 테이블 */
+  document.getElementById('rTableBody').innerHTML = list.map((item, i) => {
+    const [,cL] = compBadge(item.competition);
+    return `<tr>
+      <td class="${i===0?'main-kw':''}">${item.keyword}${i===0?' ★':''}</td>
+      <td class="num">${item.total.toLocaleString()}</td>
+      <td class="num">${item.pc.toLocaleString()}</td>
+      <td class="num">${item.mobile.toLocaleString()}</td>
+      <td class="num">${item.mobileRatio}%</td>
+      <td style="${compColor(item.competition)};font-weight:500">${item.competition}</td>
+      <td class="num">${item.cpc!=='-'?Number(item.cpc).toLocaleString()+'원':'-'}</td>
+    </tr>`;
+  }).join('');
+
+  /* 바 리스트 */
+  const maxVol = Math.max(...list.map(r=>r.total));
+  document.getElementById('rBarList').innerHTML = list.map(item => `
+    <div class="kw-row">
+      <span class="kw-name">${item.keyword}</span>
+      <div class="bar-bg"><div class="bar-fill" style="width:${Math.round(item.total/maxVol*100)}%"></div></div>
+      <span class="kw-vol">${item.total.toLocaleString()}</span>
+      <span class="badge ${compBadge(item.competition)[0]}" style="min-width:52px;text-align:center">${item.competition}</span>
+    </div>`).join('');
+
+  /* 트렌드 차트 (상대 지수 시뮬레이션 — 실제 데이터랩 API는 별도 연동 필요) */
+  const seed = main.total;
+  const trend = [0.72,0.78,0.95,0.88,0.70,0.74,0.80,0.85,0.90,0.88,0.82,0.76]
+    .map(v => Math.round(v * 100 + (Math.random()-0.5)*8));
+
+  if(trendChart) { trendChart.destroy(); trendChart=null; }
+  trendChart = new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: {
+      labels: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+      datasets: [{
+        label: '검색 지수',
+        data: trend,
+        borderColor: '#2563EB',
+        backgroundColor: 'rgba(37,99,235,0.07)',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: true,
+        pointRadius: 4,
+        pointBackgroundColor: '#2563EB',
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid:{color:'rgba(0,0,0,0.05)'}, ticks:{font:{size:11},color:'#6b6b68'} },
+        y: { grid:{color:'rgba(0,0,0,0.05)'}, ticks:{font:{size:11},color:'#6b6b68'}, min:0, max:110 }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
