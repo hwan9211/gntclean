@@ -296,9 +296,11 @@ input.sinp:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(9,105,218,.1
       <button class="s-btn" id="searchBtn" onclick="doSearch()"><i class="ti ti-sparkles" style="font-size:14px"></i> 분석하기</button>
     </div>
     <div class="cmp-area" id="cmpArea">
-      <div class="cmp-label">비교 키워드</div>
+      <div class="cmp-label">비교 키워드 (최대 4개)</div>
       <div class="cmp-row"><span style="font-size:12px;color:rgba(255,255,255,.25);min-width:44px">비교 1</span><input class="ci" type="text" id="cmp1" placeholder="비교 키워드 입력"></div>
       <div class="cmp-row"><span style="font-size:12px;color:rgba(255,255,255,.25);min-width:44px">비교 2</span><input class="ci" type="text" id="cmp2" placeholder="두 번째 비교 키워드 (선택)"></div>
+      <div class="cmp-row"><span style="font-size:12px;color:rgba(255,255,255,.25);min-width:44px">비교 3</span><input class="ci" type="text" id="cmp3" placeholder="세 번째 비교 키워드 (선택)"></div>
+      <div class="cmp-row"><span style="font-size:12px;color:rgba(255,255,255,.25);min-width:44px">비교 4</span><input class="ci" type="text" id="cmp4" placeholder="네 번째 비교 키워드 (선택)"></div>
     </div>
     <div class="qtags" id="qtags">
       <span class="qtag" onclick="fillKw('물티슈')">물티슈</span>
@@ -452,8 +454,7 @@ async function doSearch(){
   const kw=document.getElementById('kwInput').value.trim();
   if(!kw)return;
   curKw=kw;
-  const c1=document.getElementById('cmp1').value.trim(), c2=document.getElementById('cmp2').value.trim();
-  const compare=[c1,c2].filter(Boolean).join(',');
+  const compare=['cmp1','cmp2','cmp3','cmp4'].map(id=>document.getElementById(id)?.value.trim()||'').filter(Boolean).join(',');
   document.getElementById('searchBtn').disabled=true;
   setState('loading',`"${kw}" 분석 중…`);
   try{
@@ -519,16 +520,14 @@ function renderFavs(){
 function remFav(kw){favs=favs.filter(f=>f!==kw);try{localStorage.setItem('gnt_favs',JSON.stringify(favs));}catch{}renderFavs();updateFavBtn();}
 function updateFavBtn(){const on=favs.includes(curKw);document.getElementById('favBtn').classList.toggle('on',on);document.getElementById('favBtnTxt').textContent=on?'저장됨':'즐겨찾기';}
 
-// 소싱 키워드 추출 — 광범위한 패턴 매칭
+// 소싱 키워드 추출
 function extractSourcingKws(list){
-  const SIZE_KWS=['대용량','소형','휴대용','미니','업소용','가정용','묶음','세트','1+1','리필','대형','소량','벌크','점보'];
-  const ATTR_KWS=['순한','무향','무형광','친환경','저자극','항균','천연','유기농','식물성','무알코올','알로에','자연','비건','EWG','무첨가','무방부제','저향','향없는','순'];
-  const ORIGIN_KWS=['국산','독일','일본','미국','중국산','made in','수입','해외','유럽','영국','프랑스','캐나다','호주'];
-  const QTY_KWS=['10매','20매','30매','50매','80매','100매','120매','150매','200매','250매','300매','10팩','20팩','30팩','50팩','100개','200개','묶음','박스','케이스','리필'];
-  const BRAND_KWS=['하기스','유한킴벌리','크린랩','베베숲','리틀라이프','세이프가드','더블하트','베비언스','마미포코','제이오','꽃을든남자','아토팜','피죤','아기사랑','센텔라','휘슬','LG생건','애경','P&G'];
-
-  const find=(patterns)=>list.filter(item=>patterns.some(p=>item.keyword.toLowerCase().includes(p.toLowerCase()))).slice(0,6);
-  return {size:find(SIZE_KWS),attr:find(ATTR_KWS),origin:find(ORIGIN_KWS),qty:find(QTY_KWS),brand:find(BRAND_KWS)};
+  const SIZE_KWS=["대용량","소형","휴대","미니","업소","가정용","묶음","세트","리필","벌크","점보","특대"];
+  const ATTR_KWS=["순한","무향","형광","친환경","저자극","항균","천연","유기","식물","알로에","비건","EWG","첨가","방부","향없","무취","민감","안심","저알"];
+  const ORIGIN_KWS=["국산","독일","일본","미국","중국","수입","해외","유럽","영국","프랑스","국내"];
+  const QTY_KWS=["10매","20매","30매","50매","80매","100매","120매","150매","200매","250매","300매","10팩","20팩","30팩","50팩","100개","200개","박스","케이스","장"];
+  const find=(ps)=>list.filter(item=>ps.some(p=>item.keyword.toLowerCase().includes(p.toLowerCase()))).slice(0,6);
+  return {size:find(SIZE_KWS),attr:find(ATTR_KWS),origin:find(ORIGIN_KWS),qty:find(QTY_KWS)};
 }
 
 function render(data){
@@ -682,7 +681,7 @@ function render(data){
   // 비교
   const cmpEl=document.getElementById('cmpContent');
   if(compareData&&compareData.length>1){
-    const colors=['#0969da','#1a7f37','#9a6700'];
+    const colors=['#0969da','#1a7f37','#9a6700','#8250df','#cf222e'];
     cmpEl.innerHTML=`<div class="cmp-chart-h"><canvas id="cmpChart"></canvas></div>
       <table class="cmp-tbl"><thead><tr><th>키워드</th><th class="r">월간 검색량</th><th class="r">PC</th><th class="r">모바일</th><th class="r">모바일 비율</th><th>경쟁 강도</th></tr></thead>
       <tbody>${compareData.map((d,i)=>`<tr><td class="cmp-kw" style="color:${colors[i]}">${d.keyword}</td><td class="r">${d.total.toLocaleString()}</td><td class="r">${d.pc.toLocaleString()}</td><td class="r">${d.mobile.toLocaleString()}</td><td class="r">${d.mobileRatio}%</td><td><span class="${compCls(d.competition)}">${d.competition}</span></td></tr>`).join('')}</tbody></table>`;
