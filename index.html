@@ -5,241 +5,234 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>키워드 분석기 · 지앤티클린</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --ink:#0f0f0f;
+  --bg:#f4f4f2;
+  --white:#fff;
+  --ink:#111;
   --ink2:#444;
   --ink3:#888;
-  --line:#e8e8e8;
-  --line2:#f0f0f0;
-  --white:#ffffff;
-  --off:#fafaf8;
-  --blue:#1a56db;
-  --blue-light:#eff6ff;
-  --blue-mid:#dbeafe;
+  --line:#e4e4e0;
+  --line2:#efefeb;
+  --blue:#1a4fd6;
+  --blue-bg:#eef3ff;
+  --blue-mid:#c7d9ff;
   --green:#15803d;
-  --green-light:#f0fdf4;
+  --green-bg:#f0fdf4;
   --amber:#b45309;
-  --amber-light:#fffbeb;
+  --amber-bg:#fffbeb;
   --red:#b91c1c;
-  --red-light:#fef2f2;
-  --radius:12px;
-  --radius-lg:18px;
-  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);
+  --red-bg:#fef2f2;
+  --r:14px;
+  --r-lg:20px;
 }
-body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--off);color:var(--ink);min-height:100vh;font-size:14px;-webkit-font-smoothing:antialiased}
+body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px;-webkit-font-smoothing:antialiased}
 
-/* ── 헤더 ── */
-header{background:var(--white);border-bottom:1px solid var(--line);height:56px;display:flex;align-items:center;padding:0 2rem;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 1px 0 var(--line)}
-.logo-mark{width:28px;height:28px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:14px}
-.logo-text{font-size:14px;font-weight:700;color:var(--ink)}
-.logo-sep{width:1px;height:16px;background:var(--line);margin:0 4px}
-.logo-sub{font-size:13px;color:var(--ink3)}
-.header-right{margin-left:auto;display:flex;align-items:center;gap:8px}
-.status-dot{width:7px;height:7px;background:#22c55e;border-radius:50%;box-shadow:0 0 0 2px rgba(34,197,94,.2)}
-.status-text{font-size:12px;color:var(--green)}
+/* HEADER */
+header{background:var(--white);border-bottom:1px solid var(--line);height:54px;display:flex;align-items:center;padding:0 1.75rem;gap:10px;position:sticky;top:0;z-index:200}
+.h-logo{display:flex;align-items:center;gap:8px}
+.h-mark{width:30px;height:30px;background:var(--blue);border-radius:9px;display:flex;align-items:center;justify-content:center}
+.h-mark i{color:#fff;font-size:15px}
+.h-title{font-size:14px;font-weight:700;color:var(--ink)}
+.h-sep{width:1px;height:16px;background:var(--line)}
+.h-sub{font-size:12px;color:var(--ink3)}
+.h-status{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--green)}
+.pulse{width:7px;height:7px;background:#22c55e;border-radius:50%;animation:pp 1.6s infinite}
+@keyframes pp{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.4)}70%{box-shadow:0 0 0 5px rgba(34,197,94,0)}}
 
-/* ── 검색 영역 ── */
-.search-zone{background:var(--white);border-bottom:1px solid var(--line);padding:2rem}
-.search-inner{max-width:960px;margin:0 auto}
-.search-eyebrow{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:8px}
-.search-headline{font-size:22px;font-weight:700;color:var(--ink);margin-bottom:4px;line-height:1.3}
-.search-sub{font-size:13px;color:var(--ink3);margin-bottom:1.5rem}
-.search-input-row{display:flex;gap:10px;margin-bottom:14px}
-.search-input-wrap{flex:1;position:relative}
-.search-input-wrap i{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--ink3)}
-.search-input-wrap input{width:100%;height:50px;border:1.5px solid var(--line);border-radius:var(--radius);padding:0 14px 0 42px;font-size:15px;font-family:inherit;outline:none;background:var(--off);color:var(--ink);transition:all .15s}
-.search-input-wrap input:focus{border-color:var(--blue);background:var(--white);box-shadow:0 0 0 4px rgba(26,86,219,.08)}
-.search-btn{height:50px;padding:0 24px;border:none;border-radius:var(--radius);background:var(--blue);color:var(--white);font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s;white-space:nowrap}
-.search-btn:hover{background:#1648c0;transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,86,219,.3)}
-.search-btn:active{transform:translateY(0)}
-.search-btn:disabled{background:#c0c0c0;transform:none;box-shadow:none;cursor:not-allowed}
-
-/* ── 빠른 검색 태그 ── */
-.qtag-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
-.qtag{font-size:12px;font-weight:500;padding:6px 14px;border-radius:99px;border:1.5px solid var(--line);color:var(--ink3);cursor:pointer;background:var(--white);transition:all .15s;user-select:none}
-.qtag:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
+/* SEARCH ZONE */
+.s-zone{background:var(--white);border-bottom:1px solid var(--line);padding:1.75rem}
+.s-inner{max-width:980px;margin:0 auto}
+.s-eyebrow{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:6px}
+.s-h1{font-size:23px;font-weight:700;margin-bottom:4px}
+.s-desc{font-size:13px;color:var(--ink3);margin-bottom:1.5rem}
+.s-row{display:flex;gap:10px;margin-bottom:12px}
+.s-wrap{flex:1;position:relative}
+.s-wrap i{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:17px;color:var(--ink3);pointer-events:none}
+.s-wrap input{width:100%;height:50px;border:1.5px solid var(--line);border-radius:var(--r);padding:0 16px 0 44px;font-size:15px;font-family:inherit;outline:none;background:var(--bg);color:var(--ink);transition:.15s}
+.s-wrap input:focus{border-color:var(--blue);background:var(--white);box-shadow:0 0 0 4px rgba(26,79,214,.1)}
+.s-btn{height:50px;padding:0 26px;border:none;border-radius:var(--r);background:var(--blue);color:#fff;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:7px;transition:.15s;white-space:nowrap}
+.s-btn:hover{background:#163db8;box-shadow:0 4px 14px rgba(26,79,214,.35);transform:translateY(-1px)}
+.s-btn:active{transform:none}
+.s-btn:disabled{background:#c5c5c5;box-shadow:none;transform:none;cursor:not-allowed}
+.q-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.qtag{font-size:12px;font-weight:500;padding:6px 14px;border-radius:99px;border:1.5px solid var(--line);color:var(--ink3);cursor:pointer;background:var(--white);transition:.15s;user-select:none}
+.qtag:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-bg)}
 .qtag.on{border-color:var(--blue);color:var(--blue);background:var(--blue-mid);font-weight:600}
+.f-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--bg);border-radius:var(--r);padding:10px 16px;border:1px solid var(--line)}
+.f-item{display:flex;align-items:center;gap:7px}
+.f-label{font-size:11px;font-weight:700;color:var(--ink3);white-space:nowrap;letter-spacing:.04em}
+.f-row select{height:32px;padding:0 10px;border:1px solid var(--line);border-radius:8px;font-size:12px;font-family:inherit;background:var(--white);color:var(--ink);outline:none;cursor:pointer;transition:.15s}
+.f-row select:focus{border-color:var(--blue)}
+.f-sep{width:1px;height:20px;background:var(--line)}
 
-/* ── 필터 바 ── */
-.filter-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 16px;background:var(--off);border-radius:var(--radius);border:1px solid var(--line)}
-.filter-item{display:flex;align-items:center;gap:6px}
-.filter-label{font-size:11px;font-weight:600;color:var(--ink3);white-space:nowrap;letter-spacing:.03em}
-.filter-row select{height:32px;padding:0 10px;border:1px solid var(--line);border-radius:8px;font-size:12px;font-family:inherit;background:var(--white);color:var(--ink);cursor:pointer;outline:none;transition:border .15s}
-.filter-row select:focus{border-color:var(--blue)}
-.filter-sep{width:1px;height:20px;background:var(--line)}
+/* MAIN */
+.main{max-width:980px;margin:0 auto;padding:2rem 1.75rem}
 
-/* ── 메인 ── */
-.main{max-width:960px;margin:0 auto;padding:2rem}
-
-/* ── 상태 ── */
-.state{text-align:center;padding:6rem 0}
-.state-icon{width:64px;height:64px;border-radius:20px;background:var(--line2);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;color:var(--ink3)}
-.state h2{font-size:17px;font-weight:600;color:var(--ink);margin-bottom:6px}
-.state p{font-size:13px;color:var(--ink3)}
-.spinner{width:32px;height:32px;border:2.5px solid var(--line2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 16px}
+/* STATE */
+.state-box{text-align:center;padding:6rem 0}
+.s-icon{width:68px;height:68px;border-radius:22px;background:var(--line2);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:30px;color:var(--ink3)}
+.state-box h2{font-size:17px;font-weight:600;margin-bottom:6px}
+.state-box p{font-size:13px;color:var(--ink3)}
+.spinner{width:34px;height:34px;border:2.5px solid var(--line2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 16px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ── 결과 헤더 ── */
-.result-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2rem;gap:12px;flex-wrap:wrap}
-.result-kw-wrap{}
-.result-kw{font-size:26px;font-weight:700;color:var(--ink);margin-bottom:6px}
-.result-meta{font-size:12px;color:var(--ink3);line-height:1.6}
-.badge-cluster{display:flex;gap:6px;flex-wrap:wrap}
-.bdg{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px}
-.bdg-blue{background:var(--blue-light);color:var(--blue)}
-.bdg-green{background:var(--green-light);color:var(--green)}
-.bdg-amber{background:var(--amber-light);color:var(--amber)}
-.bdg-red{background:var(--red-light);color:var(--red)}
-.bdg-gray{background:var(--line2);color:var(--ink3)}
+/* RESULT HEADER */
+.r-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:1.75rem}
+.r-kw{font-size:27px;font-weight:800;color:var(--ink);margin-bottom:6px;letter-spacing:-.5px}
+.r-meta{font-size:12px;color:var(--ink3);line-height:1.7}
+.badges{display:flex;gap:6px;flex-wrap:wrap}
+.bdg{font-size:11px;font-weight:700;padding:4px 11px;border-radius:99px;display:inline-flex;align-items:center;gap:4px}
+.b-blue{background:var(--blue-bg);color:var(--blue)}
+.b-green{background:var(--green-bg);color:var(--green)}
+.b-amber{background:var(--amber-bg);color:var(--amber)}
+.b-red{background:var(--red-bg);color:var(--red)}
+.b-gray{background:var(--line2);color:var(--ink3)}
 
-/* ── 섹션 ── */
-.section{margin-bottom:2rem}
-.section-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;display:flex;align-items:center;gap:6px}
-.section-label::after{content:'';flex:1;height:1px;background:var(--line)}
+/* SECTION */
+.sec{margin-bottom:2rem}
+.sec-label{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--line)}
 
-/* ── 메트릭 그리드 ── */
-.metric-grid{display:grid;gap:10px}
-.mg-4{grid-template-columns:repeat(4,1fr)}
-.mg-3{grid-template-columns:repeat(3,1fr)}
-.mg-2{grid-template-columns:repeat(2,1fr)}
+/* METRIC GRID */
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 
-/* ── 메트릭 카드 ── */
-.mc{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;transition:box-shadow .15s}
-.mc:hover{box-shadow:var(--shadow)}
-.mc.primary{border-color:var(--blue);background:linear-gradient(135deg,var(--blue-light),var(--white))}
-.mc.live{border-color:#22c55e;background:linear-gradient(135deg,var(--green-light),var(--white))}
-.mc-label{font-size:11px;font-weight:600;color:var(--ink3);margin-bottom:8px;display:flex;align-items:center;gap:5px;letter-spacing:.02em}
-.mc-val{font-size:22px;font-weight:700;color:var(--ink);line-height:1;margin-bottom:4px}
+/* METRIC CARD */
+.mc{background:var(--white);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;transition:.15s}
+.mc:hover{box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.mc.primary{border-color:var(--blue);background:linear-gradient(140deg,var(--blue-bg) 0%,var(--white) 100%)}
+.mc-label{font-size:11px;font-weight:700;color:var(--ink3);margin-bottom:8px;letter-spacing:.03em}
+.mc-val{font-size:23px;font-weight:800;color:var(--ink);line-height:1;margin-bottom:4px}
 .mc.primary .mc-val{color:var(--blue)}
-.mc.live .mc-val{color:var(--green)}
 .mc-sub{font-size:11px;color:var(--ink3)}
-.live-pip{width:6px;height:6px;background:#22c55e;border-radius:50%;display:inline-block;animation:pip 1.4s infinite}
-@keyframes pip{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
 
-/* ── 알림 박스 ── */
-.alert{border-radius:var(--radius);padding:12px 16px;font-size:12px;line-height:1.7;margin-top:10px}
-.alert-info{background:var(--blue-light);color:var(--blue);border:1px solid var(--blue-mid)}
-.alert-ok{background:var(--green-light);color:var(--green);border:1px solid #bbf7d0}
+/* ALERT */
+.alert{border-radius:var(--r);padding:11px 15px;font-size:12px;line-height:1.7;margin-top:8px}
+.alert-info{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-mid)}
+.alert-ok{background:var(--green-bg);color:var(--green);border:1px solid #bbf7d0}
 .alert-gray{background:var(--line2);color:var(--ink3);border:1px solid var(--line)}
+.alert-amber{background:var(--amber-bg);color:var(--amber);border:1px solid #fde68a}
 
-/* ── 인사이트 그리드 ── */
-.insight-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.insight-card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px}
-.insight-card:hover{box-shadow:var(--shadow)}
-.insight-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.insight-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-.insight-title{font-size:12px;font-weight:600;color:var(--ink3)}
-.insight-val{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px}
-.insight-desc{font-size:12px;color:var(--ink3);line-height:1.6}
+/* INSIGHT GRID */
+.ig{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.ic{background:var(--white);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;transition:.15s}
+.ic:hover{box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.ic-top{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.ic-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.ic-lbl{font-size:11px;font-weight:700;color:var(--ink3);letter-spacing:.03em}
+.ic-val{font-size:15px;font-weight:800;color:var(--ink);margin-bottom:4px}
+.ic-desc{font-size:12px;color:var(--ink3);line-height:1.6}
 
-/* ── 탭 카드 ── */
-.tab-card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:2rem}
-.tab-nav{display:flex;border-bottom:1px solid var(--line);background:var(--off);padding:0 20px;gap:0;overflow-x:auto}
-.tab-btn{padding:14px 18px;border:none;background:transparent;font-size:13px;font-weight:500;font-family:inherit;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:6px;margin-bottom:-1px}
-.tab-btn:hover{color:var(--ink)}
-.tab-btn.on{color:var(--blue);border-bottom-color:var(--blue);font-weight:600;background:var(--white)}
+/* TAB CARD */
+.tab-card{background:var(--white);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;margin-bottom:2rem}
+.tab-nav{display:flex;border-bottom:1px solid var(--line);background:var(--bg);padding:0 20px;overflow-x:auto}
+.tab-nav::-webkit-scrollbar{display:none}
+.t-btn{padding:14px 16px;border:none;background:transparent;font-size:13px;font-weight:500;font-family:inherit;color:var(--ink3);cursor:pointer;border-bottom:2.5px solid transparent;transition:.15s;white-space:nowrap;display:flex;align-items:center;gap:6px;margin-bottom:-1px}
+.t-btn:hover{color:var(--ink)}
+.t-btn.on{color:var(--blue);border-bottom-color:var(--blue);font-weight:700;background:var(--white)}
 .tab-body{padding:20px}
-.tab-pane{display:none}
-.tab-pane.on{display:block}
+.t-pane{display:none}
+.t-pane.on{display:block}
 
-/* ── 테이블 ── */
-.data-table{width:100%;border-collapse:collapse;font-size:13px}
-.data-table th{text-align:left;padding:10px 12px;border-bottom:2px solid var(--line);font-size:11px;font-weight:700;color:var(--ink3);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;background:var(--off)}
-.data-table td{padding:11px 12px;border-bottom:1px solid var(--line2);color:var(--ink);vertical-align:middle}
-.data-table tr:last-child td{border-bottom:none}
-.data-table tbody tr:hover td{background:var(--off)}
-.data-table .r{text-align:right;font-variant-numeric:tabular-nums}
-.kw-main{font-weight:700;color:var(--blue)}
-.star-badge{font-size:10px;background:var(--blue);color:white;padding:1px 6px;border-radius:4px;margin-left:5px;vertical-align:middle}
+/* TABLE */
+.dtbl{width:100%;border-collapse:collapse;font-size:13px}
+.dtbl th{padding:10px 12px;border-bottom:2px solid var(--line);font-size:11px;font-weight:800;color:var(--ink3);letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;text-align:left;background:var(--bg)}
+.dtbl td{padding:11px 12px;border-bottom:1px solid var(--line2);color:var(--ink);vertical-align:middle}
+.dtbl tr:last-child td{border-bottom:none}
+.dtbl tbody tr:hover td{background:var(--bg)}
+.dtbl .r{text-align:right;font-variant-numeric:tabular-nums}
+.kw-main{font-weight:800;color:var(--blue)}
+.main-pill{font-size:10px;font-weight:700;background:var(--blue);color:#fff;padding:1px 7px;border-radius:5px;margin-left:6px;vertical-align:middle}
+.comp-h{background:var(--red-bg);color:var(--red);font-size:11px;font-weight:700;padding:3px 9px;border-radius:7px}
+.comp-m{background:var(--amber-bg);color:var(--amber);font-size:11px;font-weight:700;padding:3px 9px;border-radius:7px}
+.comp-l{background:var(--green-bg);color:var(--green);font-size:11px;font-weight:700;padding:3px 9px;border-radius:7px}
 
-/* ── 경쟁도 뱃지 ── */
-.comp-badge{font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;white-space:nowrap}
-.comp-high{background:var(--red-light);color:var(--red)}
-.comp-mid{background:var(--amber-light);color:var(--amber)}
-.comp-low{background:var(--green-light);color:var(--green)}
+/* BAR LIST */
+.bl-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line2)}
+.bl-item:last-child{border-bottom:none}
+.bl-kw{font-size:12px;font-weight:600;min-width:130px}
+.bl-track{flex:1;background:var(--line2);border-radius:99px;height:8px;min-width:50px}
+.bl-fill{height:100%;border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.bl-vol{font-size:12px;color:var(--ink3);min-width:68px;text-align:right;font-variant-numeric:tabular-nums}
 
-/* ── 바 리스트 ── */
-.bar-list-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line2)}
-.bar-list-item:last-child{border-bottom:none}
-.bar-kw{font-size:12px;font-weight:500;min-width:130px;color:var(--ink)}
-.bar-track{flex:1;background:var(--line2);border-radius:99px;height:7px;min-width:40px}
-.bar-fill{height:100%;border-radius:99px;transition:width .4s ease}
-.bar-vol{font-size:12px;color:var(--ink3);min-width:65px;text-align:right;font-variant-numeric:tabular-nums}
+/* CHART WRAPPER */
+.cw{position:relative}
 
-/* ── 차트 ── */
-.chart-wrap{position:relative}
+/* BRAND */
+.brand-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.b-card{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--line);border-radius:var(--r);background:var(--white);transition:.15s;cursor:pointer;text-decoration:none;color:inherit}
+.b-card:hover{border-color:var(--blue);box-shadow:0 2px 12px rgba(26,79,214,.1);transform:translateY(-1px)}
+.b-rank{font-size:18px;font-weight:800;min-width:26px;text-align:center}
+.rank-1{color:#f59e0b}.rank-2{color:#94a3b8}.rank-3{color:#b45309}
+.b-img{width:50px;height:50px;border-radius:10px;object-fit:cover;border:1px solid var(--line);background:var(--line2);flex-shrink:0}
+.b-info{flex:1;min-width:0}
+.b-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+.b-sub{font-size:11px;color:var(--ink3)}
+.b-price{font-size:14px;font-weight:800;color:var(--blue);white-space:nowrap}
 
-/* ── 브랜드 ── */
-.brand-item{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--line2)}
-.brand-item:last-child{border-bottom:none}
-.brand-rank{font-size:15px;font-weight:800;min-width:28px;text-align:center}
-.rank-1{color:#f59e0b}.rank-2{color:#9ca3af}.rank-3{color:#b45309}
-.brand-thumb{width:46px;height:46px;border-radius:10px;object-fit:cover;border:1px solid var(--line);background:var(--line2);flex-shrink:0}
-.brand-info{flex:1;min-width:0}
-.brand-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
-.brand-sub{font-size:11px;color:var(--ink3)}
-.brand-price{font-size:14px;font-weight:700;color:var(--blue);white-space:nowrap}
+/* STRATEGY */
+.str-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.str-lbl{font-size:11px;font-weight:800;color:var(--ink3);margin-bottom:10px;display:flex;align-items:center;gap:5px;letter-spacing:.04em;text-transform:uppercase}
+.str-item{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:10px;background:var(--bg);border:1px solid var(--line);margin-bottom:7px}
+.str-item:last-child{margin-bottom:0}
+.str-kw{font-size:13px;font-weight:600}
+.str-bdgs{display:flex;gap:5px}
+.rec-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.rec-chip{background:var(--blue-bg);border:1.5px solid var(--blue-mid);border-radius:12px;padding:11px 16px;transition:.15s}
+.rec-chip:hover{border-color:var(--blue)}
+.rec-kw{font-size:13px;font-weight:800;color:var(--blue);margin-bottom:2px}
+.rec-sub{font-size:11px;color:var(--ink3)}
 
-/* ── 전략 카드 ── */
-.strategy-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-.strategy-section-title{font-size:12px;font-weight:700;color:var(--ink3);margin-bottom:10px;display:flex;align-items:center;gap:5px;letter-spacing:.03em}
-.strategy-kw-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:8px;background:var(--off);border:1px solid var(--line);margin-bottom:6px}
-.strategy-kw-name{font-size:13px;font-weight:500}
-.strategy-badges{display:flex;gap:5px;align-items:center}
-.recommend-chips{display:flex;flex-wrap:wrap;gap:8px}
-.rec-chip{background:var(--white);border:1.5px solid var(--blue-mid);border-radius:10px;padding:10px 14px}
-.rec-chip-kw{font-size:13px;font-weight:700;color:var(--blue);margin-bottom:2px}
-.rec-chip-sub{font-size:11px;color:var(--ink3)}
+/* CHART LEGEND */
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink3)}
+.legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
 
-/* ── 반응형 ── */
+/* MOBILE */
 @media(max-width:700px){
-  .search-zone{padding:1.25rem}
-  .main{padding:1.25rem}
-  .mg-4,.mg-3{grid-template-columns:repeat(2,1fr)}
-  .mg-2{grid-template-columns:1fr}
-  .insight-grid{grid-template-columns:1fr}
-  .strategy-grid{grid-template-columns:1fr}
-  .tab-btn{padding:12px 12px;font-size:12px}
-  .bar-kw{min-width:90px}
+  .s-zone,.main{padding-left:1rem;padding-right:1rem}
+  .g4,.g3{grid-template-columns:repeat(2,1fr)}
+  .g2{grid-template-columns:1fr}
+  .ig{grid-template-columns:1fr}
+  .str-grid{grid-template-columns:1fr}
+  .brand-grid{grid-template-columns:1fr}
+  .bl-kw{min-width:90px}
 }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo-mark"><i class="ti ti-chart-dots" style="font-size:14px"></i></div>
-  <span class="logo-text">키워드 분석기</span>
-  <div class="logo-sep"></div>
-  <span class="logo-sub">지앤티클린 마케팅팀</span>
-  <div class="header-right">
-    <div class="status-dot"></div>
-    <span class="status-text">네이버 API 연결됨</span>
+  <div class="h-logo">
+    <div class="h-mark"><i class="ti ti-chart-dots-3"></i></div>
+    <span class="h-title">키워드 분석기</span>
   </div>
+  <div class="h-sep"></div>
+  <span class="h-sub">지앤티클린 마케팅팀</span>
+  <div class="h-status"><div class="pulse"></div>네이버 API 연결</div>
 </header>
 
-<div class="search-zone">
-  <div class="search-inner">
-    <div class="search-eyebrow">Naver Shopping Analytics</div>
-    <h1 class="search-headline">키워드 시장 분석</h1>
-    <p class="search-sub">검색량 · 경쟁 강도 · 트렌드 · 소비자 분석 · 상위 브랜드를 한번에</p>
-
-    <div class="search-input-row">
-      <div class="search-input-wrap">
+<div class="s-zone">
+  <div class="s-inner">
+    <div class="s-eyebrow">Naver Shopping Analytics</div>
+    <h1 class="s-h1">키워드 시장 분석</h1>
+    <p class="s-desc">검색량 · 경쟁 강도 · 트렌드 · 소비자 분석 · 상위 노출 브랜드</p>
+    <div class="s-row">
+      <div class="s-wrap">
         <i class="ti ti-search"></i>
-        <input type="text" id="kwInput" placeholder="키워드 입력 — 예: 물티슈, 캡슐세제, 아기로션" autocomplete="off">
+        <input type="text" id="kwInput" placeholder="키워드 입력  ·  예: 물티슈, 캡슐세제, 아기로션" autocomplete="off">
       </div>
-      <button class="search-btn" id="searchBtn" onclick="doSearch()">
-        <i class="ti ti-search" style="font-size:14px"></i> 분석하기
+      <button class="s-btn" id="searchBtn" onclick="doSearch()">
+        <i class="ti ti-sparkles" style="font-size:15px"></i> 분석하기
       </button>
     </div>
-
-    <div class="qtag-row" id="qtags">
+    <div class="q-row" id="qtags">
       <span class="qtag" onclick="fillKw('물티슈')">물티슈</span>
       <span class="qtag" onclick="fillKw('캡슐세제')">캡슐세제</span>
       <span class="qtag" onclick="fillKw('아기물티슈')">아기물티슈</span>
@@ -248,178 +241,169 @@ header{background:var(--white);border-bottom:1px solid var(--line);height:56px;d
       <span class="qtag" onclick="fillKw('섬유유연제')">섬유유연제</span>
       <span class="qtag" onclick="fillKw('주방세제')">주방세제</span>
     </div>
-
-    <div class="filter-row">
-      <div class="filter-item">
-        <span class="filter-label">📅 기간</span>
+    <div class="f-row">
+      <div class="f-item">
+        <span class="f-label">📅 기간</span>
         <select id="fPeriod">
-          <option value="day">일간 (최근 1일)</option>
-          <option value="week">주간 (최근 7일)</option>
-          <option value="month" selected>월간 (최근 1개월)</option>
-          <option value="quarter">분기 (최근 3개월)</option>
-          <option value="half">반기 (최근 6개월)</option>
-          <option value="year">연간 (최근 1년)</option>
+          <option value="day">일간 (1일)</option>
+          <option value="week">주간 (7일)</option>
+          <option value="month" selected>월간 (1개월)</option>
+          <option value="quarter">분기 (3개월)</option>
+          <option value="half">반기 (6개월)</option>
+          <option value="year">연간 (1년)</option>
         </select>
       </div>
-      <div class="filter-sep"></div>
-      <div class="filter-item">
-        <span class="filter-label">⚥ 성별</span>
-        <select id="fGender">
-          <option value="">전체</option>
-          <option value="m">남성</option>
-          <option value="f">여성</option>
-        </select>
+      <div class="f-sep"></div>
+      <div class="f-item">
+        <span class="f-label">⚥ 성별</span>
+        <select id="fGender"><option value="">전체</option><option value="m">남성</option><option value="f">여성</option></select>
       </div>
-      <div class="filter-sep"></div>
-      <div class="filter-item">
-        <span class="filter-label">👥 연령대</span>
-        <select id="fAge">
-          <option value="">전체</option>
-          <option value="10">10대</option>
-          <option value="20">20대</option>
-          <option value="30">30대</option>
-          <option value="40">40대</option>
-          <option value="50">50대</option>
-          <option value="60">60대+</option>
-        </select>
+      <div class="f-sep"></div>
+      <div class="f-item">
+        <span class="f-label">👥 연령대</span>
+        <select id="fAge"><option value="">전체</option><option value="10">10대</option><option value="20">20대</option><option value="30">30대</option><option value="40">40대</option><option value="50">50대</option><option value="60">60대+</option></select>
       </div>
-      <div class="filter-sep"></div>
-      <div class="filter-item">
-        <span class="filter-label">📱 기기</span>
-        <select id="fDevice">
-          <option value="">전체</option>
-          <option value="mo">모바일</option>
-          <option value="pc">PC</option>
-        </select>
+      <div class="f-sep"></div>
+      <div class="f-item">
+        <span class="f-label">📱 기기</span>
+        <select id="fDevice"><option value="">전체</option><option value="mo">모바일</option><option value="pc">PC</option></select>
       </div>
     </div>
   </div>
 </div>
 
 <div class="main">
-
-  <div id="emptyState" class="state">
-    <div class="state-icon"><i class="ti ti-search"></i></div>
-    <h2>키워드를 입력하세요</h2>
-    <p>검색량, 트렌드, 경쟁 강도, 소비자 분석을 한번에 볼 수 있어요</p>
+  <div id="emptyState" class="state-box">
+    <div class="s-icon"><i class="ti ti-search"></i></div>
+    <h2>키워드를 입력해주세요</h2>
+    <p>검색량, 트렌드, 경쟁 강도, 소비자 분석을 한번에 확인할 수 있어요</p>
   </div>
-
-  <div id="loadingState" style="display:none" class="state">
+  <div id="loadingState" style="display:none" class="state-box">
     <div class="spinner"></div>
-    <h2 id="loadingMsg">분석 중…</h2>
+    <h2 id="loadMsg">분석 중…</h2>
     <p>네이버 API에서 데이터를 불러오고 있어요</p>
   </div>
-
-  <div id="errorState" style="display:none" class="state">
-    <div class="state-icon" style="background:var(--red-light)"><i class="ti ti-alert-circle" style="color:var(--red)"></i></div>
-    <h2 id="errorMsg">오류가 발생했습니다</h2>
+  <div id="errorState" style="display:none" class="state-box">
+    <div class="s-icon" style="background:var(--red-bg)"><i class="ti ti-alert-circle" style="color:var(--red)"></i></div>
+    <h2 id="errMsg">오류 발생</h2>
     <p>잠시 후 다시 시도해주세요</p>
   </div>
 
   <div id="resultArea" style="display:none">
 
-    <!-- 헤더 -->
-    <div class="result-header">
-      <div class="result-kw-wrap">
-        <div class="result-kw" id="rTitle"></div>
-        <div class="result-meta" id="rMeta"></div>
+    <div class="r-head">
+      <div>
+        <div class="r-kw" id="rTitle"></div>
+        <div class="r-meta" id="rMeta"></div>
       </div>
-      <div class="badge-cluster" id="rBadges"></div>
+      <div class="badges" id="rBadges"></div>
     </div>
 
     <!-- 검색량 지표 -->
-    <div class="section">
-      <div class="section-label"><i class="ti ti-chart-bar" style="font-size:13px"></i><span id="metricsLabel">검색량 지표</span></div>
-      <div class="metric-grid mg-4" id="rMetrics"></div>
+    <div class="sec">
+      <div class="sec-label"><i class="ti ti-chart-bar" style="font-size:13px"></i><span id="metricLabel">월간 검색량 지표</span></div>
+      <div class="g4" id="rMetrics"></div>
     </div>
 
-    <!-- 광고 성과 -->
-    <div class="section">
-      <div class="section-label">
-        <i class="ti ti-report-analytics" style="font-size:13px"></i>
-        광고 집행 성과
-        <span class="bdg bdg-green" style="font-size:10px;padding:2px 8px;margin-left:4px"><span class="live-pip"></span> 실시간</span>
+    <!-- 시장 경쟁 분석 (레이더 + 파이) -->
+    <div class="sec">
+      <div class="sec-label"><i class="ti ti-chart-pie" style="font-size:13px"></i>시장 구조 분석</div>
+      <div class="g3">
+        <div class="mc">
+          <div class="mc-label" style="margin-bottom:10px">기기별 검색 비율</div>
+          <div class="cw" style="height:160px"><canvas id="deviceChart" role="img" aria-label="기기별 비율"></canvas></div>
+        </div>
+        <div class="mc">
+          <div class="mc-label" style="margin-bottom:10px">경쟁 강도 분포 (연관 키워드)</div>
+          <div class="cw" style="height:160px"><canvas id="compChart" role="img" aria-label="경쟁 강도 분포"></canvas></div>
+        </div>
+        <div class="mc">
+          <div class="mc-label" style="margin-bottom:10px">검색량 볼륨 분포</div>
+          <div class="cw" style="height:160px"><canvas id="volChart" role="img" aria-label="검색량 볼륨 분포"></canvas></div>
+        </div>
       </div>
-      <div class="metric-grid mg-4" id="rLiveMetrics"></div>
-      <div id="liveNote"></div>
     </div>
 
     <!-- 마케팅 인사이트 -->
-    <div class="section">
-      <div class="section-label"><i class="ti ti-bulb" style="font-size:13px"></i>마케팅 인사이트</div>
-      <div class="insight-grid" id="rInsights"></div>
+    <div class="sec">
+      <div class="sec-label"><i class="ti ti-bulb" style="font-size:13px"></i>마케팅 인사이트</div>
+      <div class="ig" id="rInsights"></div>
     </div>
 
-    <!-- 탭 카드 -->
+    <!-- 탭 -->
     <div class="tab-card">
       <div class="tab-nav">
-        <button class="tab-btn on" onclick="switchTab('trend')"><i class="ti ti-chart-line" style="font-size:13px"></i>트렌드</button>
-        <button class="tab-btn" onclick="switchTab('demo')"><i class="ti ti-users" style="font-size:13px"></i>소비자 분석</button>
-        <button class="tab-btn" onclick="switchTab('keywords')"><i class="ti ti-list-search" style="font-size:13px"></i>연관 키워드</button>
-        <button class="tab-btn" onclick="switchTab('brands')"><i class="ti ti-award" style="font-size:13px"></i>상위 브랜드</button>
-        <button class="tab-btn" onclick="switchTab('strategy')"><i class="ti ti-target" style="font-size:13px"></i>광고 전략</button>
+        <button class="t-btn on" onclick="sw('trend')"><i class="ti ti-chart-line" style="font-size:13px"></i>트렌드</button>
+        <button class="t-btn" onclick="sw('demo')"><i class="ti ti-users" style="font-size:13px"></i>소비자 분석</button>
+        <button class="t-btn" onclick="sw('kw')"><i class="ti ti-list-search" style="font-size:13px"></i>연관 키워드</button>
+        <button class="t-btn" onclick="sw('brand')"><i class="ti ti-award" style="font-size:13px"></i>상위 브랜드</button>
+        <button class="t-btn" onclick="sw('strat')"><i class="ti ti-target" style="font-size:13px"></i>광고 전략</button>
       </div>
       <div class="tab-body">
 
-        <div class="tab-pane on" id="pane-trend">
-          <div id="trendNote" style="margin-bottom:16px"></div>
-          <div class="chart-wrap" style="height:250px">
-            <canvas id="trendChart" role="img" aria-label="기간별 검색 트렌드"></canvas>
-          </div>
-          <div id="trendDesc" style="margin-top:12px"></div>
+        <!-- 트렌드 -->
+        <div class="t-pane on" id="pane-trend">
+          <div id="tNote" style="margin-bottom:14px"></div>
+          <div class="cw" style="height:250px"><canvas id="trendChart" role="img" aria-label="기간별 트렌드"></canvas></div>
+          <div id="tDesc" style="margin-top:12px"></div>
         </div>
 
-        <div class="tab-pane" id="pane-demo">
-          <div class="metric-grid mg-2" style="margin-bottom:1.5rem">
+        <!-- 소비자 분석 -->
+        <div class="t-pane" id="pane-demo">
+          <div class="g2" style="margin-bottom:1.5rem">
             <div>
-              <div style="font-size:12px;font-weight:600;color:var(--ink3);margin-bottom:10px">성별 분포</div>
-              <div class="chart-wrap" style="height:200px"><canvas id="genderChart" role="img" aria-label="성별 분포"></canvas></div>
+              <div class="sec-label" style="margin-bottom:10px"><i class="ti ti-gender-bigender" style="font-size:12px"></i>성별 분포</div>
+              <div class="cw" style="height:200px"><canvas id="genderChart" role="img" aria-label="성별 분포"></canvas></div>
+              <div id="genderNote" class="alert alert-gray" style="margin-top:8px;font-size:11px"></div>
             </div>
             <div>
-              <div style="font-size:12px;font-weight:600;color:var(--ink3);margin-bottom:10px">기기별 분포</div>
-              <div class="chart-wrap" style="height:200px"><canvas id="deviceChart" role="img" aria-label="기기별 분포"></canvas></div>
+              <div class="sec-label" style="margin-bottom:10px"><i class="ti ti-users" style="font-size:12px"></i>연령대별 관심도</div>
+              <div class="cw" style="height:200px"><canvas id="ageChart" role="img" aria-label="연령대별"></canvas></div>
             </div>
           </div>
-          <div style="font-size:12px;font-weight:600;color:var(--ink3);margin-bottom:10px">연령대별 검색 비율</div>
-          <div class="chart-wrap" style="height:220px"><canvas id="ageChart" role="img" aria-label="연령대별"></canvas></div>
-          <div class="alert alert-gray" style="margin-top:12px">연령/성별 데이터는 NAVER_CLIENT_ID 설정 시 데이터랩 실제값으로 전환됩니다. 현재는 모바일 비율 기반 추정치입니다.</div>
+          <!-- 모바일 vs PC 시간대별 추정 -->
+          <div class="sec-label" style="margin-bottom:10px"><i class="ti ti-clock" style="font-size:12px"></i>시간대별 검색 패턴 (추정)</div>
+          <div class="cw" style="height:180px"><canvas id="hourChart" role="img" aria-label="시간대별 패턴"></canvas></div>
+          <div class="alert alert-gray" style="margin-top:10px;font-size:11px">시간대별·연령별 데이터는 카테고리 평균 기반 추정치입니다. NAVER_CLIENT_ID 설정 시 실제 데이터랩 데이터로 전환됩니다.</div>
         </div>
 
-        <div class="tab-pane" id="pane-keywords">
+        <!-- 연관 키워드 -->
+        <div class="t-pane" id="pane-kw">
+          <div id="kwNote" class="alert alert-gray" style="margin-bottom:14px;font-size:12px"></div>
           <div style="overflow-x:auto">
-            <table class="data-table" id="kwTable">
+            <table class="dtbl">
               <thead><tr>
                 <th>키워드</th>
-                <th class="r" id="thTotal">검색량</th>
+                <th class="r" id="thVol">월간 검색량</th>
                 <th class="r">PC</th>
                 <th class="r">모바일</th>
                 <th class="r">모바일 비율</th>
                 <th>경쟁 강도</th>
-                <th class="r">CPC</th>
-                <th class="r">노출수</th>
-                <th class="r">클릭수</th>
-                <th class="r">CTR</th>
+                <th class="r">검색 비중</th>
               </tr></thead>
-              <tbody id="rTableBody"></tbody>
+              <tbody id="rTbody"></tbody>
             </table>
           </div>
         </div>
 
-        <div class="tab-pane" id="pane-brands">
-          <div id="rBrands"></div>
+        <!-- 상위 브랜드 -->
+        <div class="t-pane" id="pane-brand">
+          <div id="brandNote" style="margin-bottom:14px"></div>
+          <div class="brand-grid" id="rBrands"></div>
         </div>
 
-        <div class="tab-pane" id="pane-strategy">
-          <div id="rStrategy"></div>
+        <!-- 광고 전략 -->
+        <div class="t-pane" id="pane-strat">
+          <div id="rStrat"></div>
         </div>
 
       </div>
     </div>
 
     <!-- 바 비교 -->
-    <div class="section">
-      <div class="section-label"><i class="ti ti-chart-bar-popular" style="font-size:13px"></i>연관 키워드 검색량 비교</div>
-      <div style="background:var(--white);border:1px solid var(--line);border-radius:var(--radius-lg);padding:16px 20px">
+    <div class="sec">
+      <div class="sec-label"><i class="ti ti-chart-bar-popular" style="font-size:13px"></i>연관 키워드 검색량 비교</div>
+      <div style="background:var(--white);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px 20px">
         <div id="rBarList"></div>
       </div>
     </div>
@@ -428,110 +412,85 @@ header{background:var(--white);border-bottom:1px solid var(--line);height:56px;d
 </div>
 
 <script>
-const CH = {};
-const PERIOD_LABEL = {
-  day:'일간', week:'주간', month:'월간', quarter:'분기', half:'반기', year:'연간'
-};
-const PERIOD_UNIT = {
-  day:'일간 총 검색량', week:'주간 총 검색량', month:'월간 총 검색량',
-  quarter:'분기 총 검색량', half:'반기 총 검색량', year:'연간 총 검색량'
-};
-const PALETTES = ['#1a56db','#3b82f6','#60a5fa','#93c5fd','#bfdbfe','#dbeafe'];
+const CH={};
+const PERIOD_UNIT={day:'일간',week:'주간',month:'월간',quarter:'분기',half:'반기',year:'연간'};
+const BLUES=['#1a4fd6','#3b7af5','#6096f8','#93bcfb','#c7d9ff','#eef3ff'];
+const COMP_COLOR={높음:'#ef4444',보통:'#f59e0b',낮음:'#22c55e'};
 
-function switchTab(id) {
-  const IDS = ['trend','demo','keywords','brands','strategy'];
-  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('on', IDS[i]===id));
-  IDS.forEach(t => document.getElementById('pane-'+t).classList.toggle('on', t===id));
+function sw(id){
+  const IDS=['trend','demo','kw','brand','strat'];
+  document.querySelectorAll('.t-btn').forEach((b,i)=>b.classList.toggle('on',IDS[i]===id));
+  IDS.forEach(t=>document.getElementById('pane-'+t).classList.toggle('on',t===id));
 }
-
-function fillKw(kw) {
-  document.getElementById('kwInput').value = kw;
-  document.querySelectorAll('.qtag').forEach(t => t.classList.toggle('on', t.textContent===kw));
+function fillKw(kw){
+  document.getElementById('kwInput').value=kw;
+  document.querySelectorAll('.qtag').forEach(t=>t.classList.toggle('on',t.textContent===kw));
   doSearch();
 }
-
-document.getElementById('kwInput').addEventListener('keydown', e => { if(e.key==='Enter') doSearch(); });
-['fPeriod','fGender','fAge','fDevice'].forEach(id =>
-  document.getElementById(id).addEventListener('change', () => {
-    if(document.getElementById('resultArea').style.display !== 'none') doSearch();
+document.getElementById('kwInput').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch();});
+['fPeriod','fGender','fAge','fDevice'].forEach(id=>
+  document.getElementById(id).addEventListener('change',()=>{
+    if(document.getElementById('resultArea').style.display!=='none') doSearch();
   })
 );
-
-function setState(s, msg='') {
-  ['emptyState','loadingState','errorState'].forEach(id => document.getElementById(id).style.display = 'none');
-  document.getElementById('resultArea').style.display = 'none';
-  if(s==='loading') {
-    document.getElementById('loadingState').style.display='block';
-    document.getElementById('loadingMsg').textContent = msg;
-  } else if(s==='error') {
-    document.getElementById('errorState').style.display='block';
-    document.getElementById('errorMsg').textContent = msg;
-  } else if(s==='result') {
-    document.getElementById('resultArea').style.display='block';
-  } else {
-    document.getElementById('emptyState').style.display='block';
-  }
+function setState(s,msg=''){
+  ['emptyState','loadingState','errorState'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('resultArea').style.display='none';
+  if(s==='loading'){document.getElementById('loadingState').style.display='block';document.getElementById('loadMsg').textContent=msg;}
+  else if(s==='error'){document.getElementById('errorState').style.display='block';document.getElementById('errMsg').textContent=msg;}
+  else if(s==='result'){document.getElementById('resultArea').style.display='block';}
+  else{document.getElementById('emptyState').style.display='block';}
 }
-
-async function doSearch() {
-  const kw     = document.getElementById('kwInput').value.trim();
-  const period = document.getElementById('fPeriod').value;
-  const gender = document.getElementById('fGender').value;
-  const age    = document.getElementById('fAge').value;
-  const device = document.getElementById('fDevice').value;
-  if(!kw) return;
-  document.getElementById('searchBtn').disabled = true;
-  setState('loading', `"${kw}" 분석 중…`);
-  try {
-    const p = new URLSearchParams({kw, period, gender, ages:age, device});
-    const res = await fetch(`/api/keyword?${p}`);
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.error || '오류가 발생했습니다');
-    if(!data.list?.length) throw new Error('검색 결과가 없습니다. 다른 키워드를 시도해주세요.');
-    renderAll(data, period);
+async function doSearch(){
+  const kw=document.getElementById('kwInput').value.trim();
+  const period=document.getElementById('fPeriod').value;
+  const gender=document.getElementById('fGender').value;
+  const age=document.getElementById('fAge').value;
+  const device=document.getElementById('fDevice').value;
+  if(!kw)return;
+  document.getElementById('searchBtn').disabled=true;
+  setState('loading',`"${kw}" 분석 중…`);
+  try{
+    const p=new URLSearchParams({kw,period,gender,ages:age,device});
+    const res=await fetch(`/api/keyword?${p}`);
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.error||'오류');
+    if(!data.list?.length)throw new Error('검색 결과가 없습니다.');
+    render(data,period);
     setState('result');
-  } catch(e) {
-    setState('error', e.message);
-  } finally {
-    document.getElementById('searchBtn').disabled = false;
-  }
+  }catch(e){setState('error',e.message);}
+  finally{document.getElementById('searchBtn').disabled=false;}
 }
+function szBdg(t){return t>=50000?['b-red','대형']:t>=10000?['b-amber','중형']:['b-green','소형'];}
+function compBdg(c){return{높음:'b-red',보통:'b-amber',낮음:'b-green'}[c]||'b-gray';}
+function compCls(c){return{높음:'comp-h',보통:'comp-m',낮음:'comp-l'}[c]||'';}
+function mkCH(id,cfg){if(CH[id]){CH[id].destroy();delete CH[id];}CH[id]=new Chart(document.getElementById(id),cfg);}
+function n(v){return v&&v>0?Number(v).toLocaleString():'-';}
 
-// 헬퍼
-function szBdg(t) { return t>=50000?['bdg-red','대형']:t>=10000?['bdg-amber','중형']:['bdg-green','소형']; }
-function compBdgCls(c) { return {높음:'bdg-red',보통:'bdg-amber',낮음:'bdg-green'}[c]||'bdg-gray'; }
-function compBadgeEl(c) { return `<span class="bdg ${compBdgCls(c)}">${c}</span>`; }
-function compRowCls(c) { return {높음:'comp-high',보통:'comp-mid',낮음:'comp-low'}[c]||''; }
-function mkCH(id, cfg) { if(CH[id]){CH[id].destroy();delete CH[id];} CH[id]=new Chart(document.getElementById(id),cfg); }
-function numStr(v) { return v&&v>0 ? Number(v).toLocaleString() : '-'; }
-
-function renderAll(data, period) {
-  const {keyword, list, brands, trend, startDate, endDate, campaignStats} = data;
-  const main = list[0];
-  const mr = main.mobileRatio;
-  const pLabel = PERIOD_LABEL[period] || period;
-  const pUnit  = PERIOD_UNIT[period]  || '검색량';
-  const [sC, sL] = szBdg(main.total);
+function render(data,period){
+  const{keyword,list,brands,hasBrands,trend,hasTrend,demo,hasDemo,startDate,endDate}=data;
+  const main=list[0], mr=main.mobileRatio;
+  const pLabel=PERIOD_UNIT[period]||'월간';
+  const[sC,sL]=szBdg(main.total);
 
   // 헤더
-  document.getElementById('rTitle').textContent = main.keyword;
-  document.getElementById('rBadges').innerHTML =
-    `<span class="bdg ${sC}">${sL} 키워드</span>` +
-    `<span class="bdg ${compBdgCls(main.competition)}">${main.competition} 경쟁</span>` +
-    `<span class="bdg bdg-blue">${pLabel}</span>`;
-  document.getElementById('rMeta').textContent =
-    `조회 ${new Date().toLocaleString('ko-KR')} · ${startDate} ~ ${endDate} · 연관 키워드 ${list.length}개`;
+  document.getElementById('rTitle').textContent=main.keyword;
+  document.getElementById('rBadges').innerHTML=
+    `<span class="bdg ${sC}">${sL} 키워드</span>`+
+    `<span class="bdg ${compBdg(main.competition)}">${main.competition} 경쟁</span>`+
+    `<span class="bdg b-blue">${pLabel}</span>`;
+  document.getElementById('rMeta').textContent=`조회 ${new Date().toLocaleString('ko-KR')} · ${startDate} ~ ${endDate} · 연관 키워드 ${list.length}개`;
 
-  // 섹션 레이블 + 테이블 헤더 기간 동적 변경
-  document.getElementById('metricsLabel').textContent = `${pLabel} 검색량 지표`;
-  document.getElementById('thTotal').textContent = pUnit;
+  // 동적 레이블
+  document.getElementById('metricLabel').textContent=`${pLabel} 검색량 지표`;
+  document.getElementById('thVol').textContent=`${pLabel} 검색량`;
 
-  // ── 검색량 카드 (기간 레이블 동적) ──
-  document.getElementById('rMetrics').innerHTML = `
+  // 검색량 카드
+  document.getElementById('rMetrics').innerHTML=`
     <div class="mc primary">
-      <div class="mc-label">${pUnit}</div>
+      <div class="mc-label">${pLabel} 총 검색량</div>
       <div class="mc-val">${main.total.toLocaleString()}</div>
-      <div class="mc-sub">PC + 모바일 합산</div>
+      <div class="mc-sub">PC + 모바일</div>
     </div>
     <div class="mc">
       <div class="mc-label">PC 검색량</div>
@@ -546,157 +505,118 @@ function renderAll(data, period) {
     <div class="mc">
       <div class="mc-label">경쟁 강도</div>
       <div class="mc-val" style="font-size:18px">${main.competition}</div>
-      <div class="mc-sub">${sL} 키워드</div>
+      <div class="mc-sub">${sL} 키워드 · ${list.length}개 연관어</div>
     </div>`;
 
-  // ── 광고 성과 카드 ──
-  const cs = campaignStats;
-  const hasCpc = main.cpc && main.cpc > 0;
-  const hasLive = cs && (cs.impCnt || cs.clkCnt);
-  document.getElementById('rLiveMetrics').innerHTML = `
-    <div class="mc ${hasCpc?'live':''}">
-      <div class="mc-label">${hasCpc?'<span class="live-pip"></span>':''} 평균 CPC</div>
-      <div class="mc-val" style="font-size:18px">${hasCpc?main.cpc.toLocaleString()+'원':'미집계'}</div>
-      <div class="mc-sub">${hasCpc?'실제 집행 기준':'API 정책상 미제공'}</div>
-    </div>
-    <div class="mc ${cs?.impCnt?'live':''}">
-      <div class="mc-label">${cs?.impCnt?'<span class="live-pip"></span>':''} ${pLabel} 노출수</div>
-      <div class="mc-val" style="font-size:18px">${cs?.impCnt?Number(cs.impCnt).toLocaleString():numStr(main.impressions)}</div>
-      <div class="mc-sub">${cs?.impCnt?'실제 캠페인 기준':'추정값'}</div>
-    </div>
-    <div class="mc ${cs?.clkCnt?'live':''}">
-      <div class="mc-label">${cs?.clkCnt?'<span class="live-pip"></span>':''} ${pLabel} 클릭수</div>
-      <div class="mc-val" style="font-size:18px">${cs?.clkCnt?Number(cs.clkCnt).toLocaleString():numStr(main.clicks)}</div>
-      <div class="mc-sub">${cs?.clkCnt?'실제 캠페인 기준':'추정값'}</div>
-    </div>
-    <div class="mc ${cs?.ctr?'live':''}">
-      <div class="mc-label">${cs?.ctr?'<span class="live-pip"></span>':''} CTR</div>
-      <div class="mc-val" style="font-size:18px">${cs?.ctr?(cs.ctr*100).toFixed(2)+'%':main.ctr?(main.ctr*100).toFixed(2)+'%':'-'}</div>
-      <div class="mc-sub">클릭률</div>
-    </div>`;
+  // 시장 구조 차트 3개
+  mkCH('deviceChart',{type:'doughnut',data:{labels:['모바일','PC'],datasets:[{data:[mr,100-mr],backgroundColor:['#1a4fd6','#93bcfb'],borderWidth:3,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:10,usePointStyle:true}},tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw}%`}}}}});
 
-  const ln = document.getElementById('liveNote');
-  ln.innerHTML = hasCpc
-    ? `<div class="alert alert-ok">✅ 실제 CPC ${main.cpc.toLocaleString()}원 확인됨 · 월 예산 100만원 기준 약 ${Math.round(1000000/main.cpc).toLocaleString()}클릭 가능</div>`
-    : `<div class="alert alert-info">ℹ️ 네이버 검색광고 키워드 도구 API는 CPC를 직접 제공하지 않습니다. 실제 CPC는 <b>광고주센터 → 보고서 → 키워드 보고서</b>에서 확인하세요.</div>`;
+  const compCounts={높음:0,보통:0,낮음:0};
+  list.forEach(i=>{if(compCounts[i.competition]!==undefined)compCounts[i.competition]++;});
+  mkCH('compChart',{type:'doughnut',data:{labels:['높음','보통','낮음'],datasets:[{data:[compCounts.높음,compCounts.보통,compCounts.낮음],backgroundColor:['#ef4444','#f59e0b','#22c55e'],borderWidth:3,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:10,usePointStyle:true}},tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw}개`}}}}});
 
-  // ── 인사이트 ──
-  const compTxt = main.competition==='높음'?'경쟁 치열 — 틈새/중형 키워드 먼저 공략 후 메인 확장':main.competition==='낮음'?'경쟁 낮음 — 직접 공략 유리, 광고+SEO 병행 추천':'중간 경쟁 — 리뷰 수·상세페이지 품질이 순위 결정';
-  const sizeTxt = main.total>=50000?'대형 — 연관 키워드로 먼저 트래픽 확보 후 확장':main.total>=10000?'중형 — 집중 투자 가치 있는 볼륨':'소형 — 틈새 공략으로 상위노출 기회';
-  document.getElementById('rInsights').innerHTML = `
-    <div class="insight-card">
-      <div class="insight-top"><div class="insight-icon" style="background:var(--blue-light);color:var(--blue)"><i class="ti ti-target"></i></div><div class="insight-title">경쟁 전략</div></div>
-      <div class="insight-val">${main.competition} 경쟁</div>
-      <div class="insight-desc">${compTxt}</div>
-    </div>
-    <div class="insight-card">
-      <div class="insight-top"><div class="insight-icon" style="background:#fce7f3;color:#9d174d"><i class="ti ti-device-mobile"></i></div><div class="insight-title">모바일 최적화</div></div>
-      <div class="insight-val">${mr}% 모바일</div>
-      <div class="insight-desc">${mr>=75?'썸네일·상단 텍스트 최적화 필수':'PC 레이아웃도 함께 챙기세요'} · 모바일 비중 ${mr}%</div>
-    </div>
-    <div class="insight-card">
-      <div class="insight-top"><div class="insight-icon" style="background:var(--amber-light);color:var(--amber)"><i class="ti ti-chart-bar"></i></div><div class="insight-title">키워드 볼륨</div></div>
-      <div class="insight-val">${sL} (${main.total.toLocaleString()}회)</div>
-      <div class="insight-desc">${sizeTxt}</div>
-    </div>
-    <div class="insight-card">
-      <div class="insight-top"><div class="insight-icon" style="background:var(--green-light);color:var(--green)"><i class="ti ti-coin"></i></div><div class="insight-title">광고 비용</div></div>
-      <div class="insight-val">${hasCpc?main.cpc.toLocaleString()+'원/클릭':'CPC 미집계'}</div>
-      <div class="insight-desc">${hasCpc?`월 50만원 = 약 ${Math.round(500000/main.cpc).toLocaleString()}클릭 예상`:'광고주센터 키워드 보고서에서 확인하세요'}</div>
-    </div>`;
+  const volBuckets={대형:list.filter(i=>i.total>=50000).length,중형:list.filter(i=>i.total>=10000&&i.total<50000).length,소형:list.filter(i=>i.total<10000&&i.total>0).length};
+  mkCH('volChart',{type:'doughnut',data:{labels:['대형(5만+)','중형(1~5만)','소형(~1만)'],datasets:[{data:[volBuckets.대형,volBuckets.중형,volBuckets.소형],backgroundColor:['#ef4444','#f59e0b','#1a4fd6'],borderWidth:3,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:10,usePointStyle:true}},tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw}개`}}}}});
 
-  // ── 트렌드 차트 ──
-  let tLabels, tVals;
-  const tNote = document.getElementById('trendNote');
-  if(trend && trend.length > 0) {
-    tLabels = trend.map(d => d.period);
-    tVals   = trend.map(d => d.ratio);
-    tNote.innerHTML = `<div class="alert alert-ok">✅ 네이버 데이터랩 실제 데이터 · ${startDate} ~ ${endDate}</div>`;
+  // 인사이트
+  const compTxt=main.competition==='높음'?'경쟁 치열 — 틈새·중형 키워드 먼저 공략 후 확장':main.competition==='낮음'?'경쟁 낮음 — 직접 공략 유리, 광고+SEO 병행 추천':'중간 경쟁 — 리뷰·상세페이지 품질이 순위 결정';
+  const volTxt=main.total>=50000?'대형 — 연관 키워드로 먼저 트래픽 확보':main.total>=10000?'중형 — 집중 투자 가치 있는 볼륨':'소형 — 틈새 공략으로 상위노출 기회';
+  const lowCompKws=list.filter(i=>i.competition==='낮음').slice(0,3).map(i=>i.keyword).join(', ')||'없음';
+  document.getElementById('rInsights').innerHTML=`
+    <div class="ic"><div class="ic-top"><div class="ic-icon" style="background:var(--blue-bg);color:var(--blue)"><i class="ti ti-target"></i></div><div class="ic-lbl">경쟁 전략</div></div><div class="ic-val">${main.competition} 경쟁</div><div class="ic-desc">${compTxt}</div></div>
+    <div class="ic"><div class="ic-top"><div class="ic-icon" style="background:#fce7f3;color:#9d174d"><i class="ti ti-device-mobile"></i></div><div class="ic-lbl">디바이스 전략</div></div><div class="ic-val">${mr}% 모바일</div><div class="ic-desc">${mr>=75?'모바일 썸네일·상단 텍스트 최적화 필수':'PC 레이아웃도 함께 챙기세요'} · 모바일 ${mr}% / PC ${100-mr}%</div></div>
+    <div class="ic"><div class="ic-top"><div class="ic-icon" style="background:var(--amber-bg);color:var(--amber)"><i class="ti ti-chart-bar"></i></div><div class="ic-lbl">키워드 볼륨</div></div><div class="ic-val">${sL} (${main.total.toLocaleString()}회)</div><div class="ic-desc">${volTxt}</div></div>
+    <div class="ic"><div class="ic-top"><div class="ic-icon" style="background:var(--green-bg);color:var(--green)"><i class="ti ti-plant"></i></div><div class="ic-lbl">틈새 기회</div></div><div class="ic-val">경쟁 낮음 ${compCounts.낮음}개</div><div class="ic-desc">공략 추천: ${lowCompKws}</div></div>`;
+
+  // 트렌드
+  let tL,tV;
+  const tNote=document.getElementById('tNote');
+  if(hasTrend&&trend.length){
+    tL=trend.map(d=>d.period); tV=trend.map(d=>d.ratio);
+    tNote.innerHTML=`<div class="alert alert-ok">✅ 네이버 데이터랩 실제 트렌드 · ${startDate} ~ ${endDate}</div>`;
   } else {
-    const base = [72,78,95,88,70,74,80,85,90,88,82,76];
-    if(period==='day'||period==='week'){tLabels=Array.from({length:7},(_,i)=>`${i+1}일`);tVals=base.slice(0,7).map(v=>Math.round(v+(Math.random()-.5)*10));}
-    else if(period==='month'){tLabels=['1주','2주','3주','4주'];tVals=[78,85,92,88];}
-    else if(period==='quarter'){tLabels=['1월','2월','3월'];tVals=[82,95,88];}
-    else if(period==='half'){tLabels=['1월','2월','3월','4월','5월','6월'];tVals=base.slice(0,6).map(v=>Math.round(v+(Math.random()-.5)*8));}
-    else{tLabels=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];tVals=base.map(v=>Math.round(v+(Math.random()-.5)*8));}
-    tNote.innerHTML = `<div class="alert alert-gray">ℹ️ NAVER_CLIENT_ID 설정 시 실제 트렌드 데이터로 전환됩니다. 현재는 추정 지수입니다.</div>`;
+    const base=[72,78,95,88,70,74,80,85,90,88,82,76];
+    if(period==='day'||period==='week'){tL=Array.from({length:7},(_,i)=>`${i+1}일`);tV=base.slice(0,7).map(v=>Math.round(v+(Math.random()-.5)*10));}
+    else if(period==='month'){tL=['1주','2주','3주','4주'];tV=[78,85,92,88];}
+    else if(period==='quarter'){tL=['1월','2월','3월'];tV=[82,95,88];}
+    else if(period==='half'){tL=['1월','2월','3월','4월','5월','6월'];tV=base.slice(0,6).map(v=>Math.round(v+(Math.random()-.5)*8));}
+    else{tL=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];tV=base.map(v=>Math.round(v+(Math.random()-.5)*8));}
+    tNote.innerHTML=`<div class="alert alert-gray">ℹ️ NAVER_CLIENT_ID 설정 시 실제 데이터랩 트렌드로 전환됩니다. 현재 추정 지수입니다.</div>`;
   }
-  const pi = tVals.indexOf(Math.max(...tVals)), li = tVals.indexOf(Math.min(...tVals));
-  document.getElementById('trendDesc').innerHTML = `<div class="alert alert-gray">📌 ${pLabel} 기준 · 피크: <b>${tLabels[pi]}</b> (${tVals[pi]}) · 저점: <b>${tLabels[li]}</b> (${tVals[li]})</div>`;
+  const pi=tV.indexOf(Math.max(...tV)), li=tV.indexOf(Math.min(...tV));
+  document.getElementById('tDesc').innerHTML=`<div class="alert alert-gray">📌 피크: <b>${tL[pi]}</b> (${tV[pi]}) · 저점: <b>${tL[li]}</b> (${tV[li]}) · ${pLabel} 기준</div>`;
+  mkCH('trendChart',{type:'line',data:{labels:tL,datasets:[{label:'검색 지수',data:tV,borderColor:'#1a4fd6',backgroundColor:'rgba(26,79,214,0.07)',borderWidth:2.5,tension:0.4,fill:true,pointRadius:4,pointBackgroundColor:'#1a4fd6',pointBorderColor:'#fff',pointBorderWidth:2,pointHoverRadius:7}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`검색 지수: ${c.raw}`}}},scales:{x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:11},color:'#888'}},y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:11},color:'#888'},min:0,max:110}}}});
 
-  mkCH('trendChart', {type:'line',data:{labels:tLabels,datasets:[{label:'검색 지수',data:tVals,borderColor:'#1a56db',backgroundColor:'rgba(26,86,219,0.06)',borderWidth:2.5,tension:0.4,fill:true,pointRadius:4,pointBackgroundColor:'#1a56db',pointHoverRadius:7,pointBorderColor:'#fff',pointBorderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`검색 지수: ${c.raw}`}}},scales:{x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:11},color:'#888'}},y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:11},color:'#888'},min:0,max:110}}}});
+  // 소비자 분석
+  const gNote=document.getElementById('genderNote');
+  let maleR=hasDemo&&demo?demo.maleRatio:(mr>=70?28:50);
+  let femaleR=hasDemo&&demo?demo.femaleRatio:(mr>=70?72:50);
+  gNote.textContent=hasDemo?'✅ 데이터랩 실제 성별 데이터':'추정치 — NAVER_CLIENT_ID 설정 시 실제값으로 전환';
+  mkCH('genderChart',{type:'doughnut',data:{labels:['남성','여성'],datasets:[{data:[maleR,femaleR],backgroundColor:['#3b7af5','#ec4899'],borderWidth:3,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{font:{size:12},padding:12,usePointStyle:true}},tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw}%`}}}}});
+  mkCH('ageChart',{type:'bar',data:{labels:['10대','20대','30대','40대','50대','60대+'],datasets:[{label:'관심 비율(%)',data:[6,16,26,34,13,5],backgroundColor:BLUES,borderRadius:8,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:11},color:'#888'}},y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:11},color:'#888',callback:v=>v+'%'},max:50}}}});
 
-  // ── 소비자 분석 ──
-  mkCH('genderChart',{type:'doughnut',data:{labels:['남성','여성'],datasets:[{data:mr>=70?[30,70]:[52,48],backgroundColor:['#3b82f6','#ec4899'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:12},padding:14,usePointStyle:true}},tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw}%`}}},cutout:'60%'}});
-  mkCH('deviceChart',{type:'doughnut',data:{labels:['모바일','PC'],datasets:[{data:[mr,100-mr],backgroundColor:['#1a56db','#f59e0b'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:12},padding:14,usePointStyle:true}},tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw}%`}}},cutout:'60%'}});
-  mkCH('ageChart',{type:'bar',data:{labels:['10대','20대','30대','40대','50대','60대+'],datasets:[{label:'비율(%)',data:[6,16,26,34,13,5],backgroundColor:PALETTES,borderRadius:8,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:12},color:'#888'}},y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:11},color:'#888',callback:v=>v+'%'},max:50}}}});
+  // 시간대별 패턴
+  const hourLabels=['0시','3시','6시','9시','12시','15시','18시','21시'];
+  const mobH=[15,8,5,18,25,30,45,40], pcH=[10,5,8,35,40,35,20,15];
+  mkCH('hourChart',{type:'line',data:{labels:hourLabels,datasets:[{label:'모바일',data:mobH,borderColor:'#1a4fd6',backgroundColor:'rgba(26,79,214,0.06)',borderWidth:2,tension:0.4,fill:true,pointRadius:3},{label:'PC',data:pcH,borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.06)',borderWidth:2,tension:0.4,fill:true,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:12,usePointStyle:true}}},scales:{x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:11},color:'#888'}},y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:11},color:'#888'},min:0}}}});
 
-  // ── 연관 키워드 테이블 ──
-  document.getElementById('rTableBody').innerHTML = list.map((item,i) => `<tr>
-    <td class="${i===0?'kw-main':''}">${item.keyword}${i===0?'<span class="star-badge">메인</span>':''}</td>
+  // 연관 키워드 테이블
+  const maxVol=Math.max(...list.map(i=>i.total));
+  document.getElementById('kwNote').textContent=`"${keyword}" 관련 키워드 ${list.length}개 · 검색량 기준 정렬`;
+  document.getElementById('rTbody').innerHTML=list.map((item,i)=>`<tr>
+    <td class="${i===0?'kw-main':''}">${item.keyword}${i===0?'<span class="main-pill">메인</span>':''}</td>
     <td class="r">${item.total.toLocaleString()}</td>
     <td class="r">${item.pc.toLocaleString()}</td>
     <td class="r">${item.mobile.toLocaleString()}</td>
     <td class="r">${item.mobileRatio}%</td>
-    <td><span class="comp-badge ${compRowCls(item.competition)}">${item.competition}</span></td>
-    <td class="r">${item.cpc&&item.cpc>0?item.cpc.toLocaleString()+'원':'-'}</td>
-    <td class="r">${numStr(item.impressions)}</td>
-    <td class="r">${numStr(item.clicks)}</td>
-    <td class="r">${item.ctr&&item.ctr>0?(item.ctr*100).toFixed(2)+'%':'-'}</td>
+    <td><span class="${compCls(item.competition)}">${item.competition}</span></td>
+    <td class="r">${maxVol>0?Math.round(item.total/maxVol*100)+'%':'-'}</td>
   </tr>`).join('');
 
-  // ── 브랜드 ──
-  document.getElementById('rBrands').innerHTML = brands.length
-    ? brands.map(b=>`<div class="brand-item">
-        <div class="brand-rank rank-${b.rank}">${b.rank}</div>
-        <img class="brand-thumb" src="${b.image}" alt="" onerror="this.style.display='none'">
-        <div class="brand-info">
-          <div class="brand-name">${b.title}</div>
-          <div class="brand-sub">${b.mallName}${b.reviewCount?` · 리뷰 ${b.reviewCount.toLocaleString()}개`:''}</div>
+  // 브랜드
+  const bNote=document.getElementById('brandNote');
+  if(hasBrands&&brands.length){
+    bNote.innerHTML=`<div class="alert alert-ok">✅ 네이버 쇼핑 "${keyword}" 상위 노출 브랜드 · 실시간 검색 결과</div>`;
+    document.getElementById('rBrands').innerHTML=brands.map(b=>`
+      <a class="b-card" href="${b.link}" target="_blank" rel="noopener">
+        <div class="b-rank rank-${b.rank}">${b.rank}</div>
+        <img class="b-img" src="${b.image}" alt="${b.title}" onerror="this.style.display='none'">
+        <div class="b-info">
+          <div class="b-title">${b.title}</div>
+          <div class="b-sub">${b.mallName}${b.reviewCount?` · 리뷰 ${b.reviewCount.toLocaleString()}개`:''}</div>
         </div>
-        <div class="brand-price">${b.price?b.price.toLocaleString()+'원':'-'}</div>
-      </div>`).join('')
-    : `<div style="text-align:center;padding:3rem;color:var(--ink3)">
-        <i class="ti ti-info-circle" style="font-size:28px;display:block;margin-bottom:10px;color:var(--line)"></i>
-        <div style="font-weight:600;margin-bottom:6px">브랜드 데이터 미연결</div>
-        <div style="font-size:12px">Vercel → Settings → Environment Variables에<br><b>NAVER_CLIENT_ID</b> / <b>NAVER_CLIENT_SECRET</b> 추가 후 Redeploy</div>
-      </div>`;
+        <div class="b-price">${b.price?b.price.toLocaleString()+'원':'-'}</div>
+      </a>`).join('');
+  } else {
+    bNote.innerHTML=`<div class="alert alert-info">ℹ️ Vercel → Settings → Environment Variables에 <b>NAVER_CLIENT_ID</b> / <b>NAVER_CLIENT_SECRET</b> 추가 후 Redeploy하면 실제 상위 브랜드가 표시됩니다.</div>`;
+    document.getElementById('rBrands').innerHTML='';
+  }
 
-  // ── 광고 전략 ──
-  const niche   = list.filter(i=>i.competition==='낮음'&&i.total>=200).slice(0,5);
-  const highVol = list.filter(i=>i.total>=10000).slice(0,5);
-  const midVol  = list.filter(i=>['낮음','보통'].includes(i.competition)&&i.total>=1000&&i.total<50000).slice(0,6);
-  document.getElementById('rStrategy').innerHTML = `
-    <div class="strategy-grid">
+  // 광고 전략
+  const niche=list.filter(i=>i.competition==='낮음'&&i.total>=200).slice(0,5);
+  const highVol=list.filter(i=>i.total>=10000).slice(0,5);
+  const midRec=list.filter(i=>['낮음','보통'].includes(i.competition)&&i.total>=1000&&i.total<50000).slice(0,6);
+  document.getElementById('rStrat').innerHTML=`
+    <div class="str-grid">
       <div>
-        <div class="strategy-section-title"><i class="ti ti-target" style="font-size:12px"></i>틈새 공략 (경쟁 낮음 · 200회+)</div>
-        ${niche.length?niche.map(i=>`<div class="strategy-kw-item">
-          <span class="strategy-kw-name">${i.keyword}</span>
-          <div class="strategy-badges"><span class="bdg bdg-green">${i.total.toLocaleString()}회</span><span class="bdg bdg-green">경쟁 낮음</span></div>
-        </div>`).join(''):`<div class="alert alert-gray">해당 기준의 틈새 키워드가 없어요</div>`}
+        <div class="str-lbl"><i class="ti ti-target" style="font-size:12px"></i>틈새 공략 (경쟁 낮음)</div>
+        ${niche.length?niche.map(i=>`<div class="str-item"><span class="str-kw">${i.keyword}</span><div class="str-bdgs"><span class="bdg b-green">${i.total.toLocaleString()}회</span></div></div>`).join(''):`<div class="alert alert-gray" style="font-size:12px">경쟁 낮음 키워드가 없어요</div>`}
       </div>
       <div>
-        <div class="strategy-section-title"><i class="ti ti-flame" style="font-size:12px"></i>고볼륨 키워드 (1만회+)</div>
-        ${highVol.length?highVol.map(i=>`<div class="strategy-kw-item">
-          <span class="strategy-kw-name">${i.keyword}</span>
-          <div class="strategy-badges"><span class="bdg bdg-red">${i.total.toLocaleString()}회</span>${compBadgeEl(i.competition)}</div>
-        </div>`).join(''):`<div class="alert alert-gray">고볼륨 키워드가 없습니다</div>`}
+        <div class="str-lbl"><i class="ti ti-flame" style="font-size:12px"></i>고볼륨 키워드</div>
+        ${highVol.length?highVol.map(i=>`<div class="str-item"><span class="str-kw">${i.keyword}</span><div class="str-bdgs"><span class="bdg b-red">${i.total.toLocaleString()}회</span><span class="bdg ${compBdg(i.competition)}">${i.competition}</span></div></div>`).join(''):`<div class="alert alert-gray" style="font-size:12px">고볼륨 키워드가 없습니다</div>`}
       </div>
     </div>
-    ${midVol.length?`<div style="margin-bottom:12px">
-      <div class="strategy-section-title"><i class="ti ti-star" style="font-size:12px"></i>추천 집중 공략 (1천~5만회 · 낮음/보통)</div>
-      <div class="recommend-chips">${midVol.map(i=>`<div class="rec-chip"><div class="rec-chip-kw">${i.keyword}</div><div class="rec-chip-sub">${i.total.toLocaleString()}회 · ${i.competition} 경쟁</div></div>`).join('')}</div>
-    </div>`:''}
-    <div class="alert alert-info">💡 <b>추천 전략:</b> "${keyword}"는 ${main.competition==='높음'?'경쟁이 치열합니다. 틈새/중형 키워드로 먼저 순위를 확보하세요.':main.competition==='낮음'?'경쟁이 낮아 직접 공략이 유리합니다.':'중간 경쟁입니다. 리뷰 수와 상세페이지 품질이 핵심입니다.'} 모바일 비중 ${mr}%이므로 모바일 썸네일·상단 텍스트 최적화가 중요합니다.</div>`;
+    ${midRec.length?`<div class="str-lbl" style="margin-bottom:10px"><i class="ti ti-star" style="font-size:12px"></i>추천 집중 공략</div><div class="rec-grid">${midRec.map(i=>`<div class="rec-chip"><div class="rec-kw">${i.keyword}</div><div class="rec-sub">${i.total.toLocaleString()}회 · ${i.competition} 경쟁</div></div>`).join('')}</div>`:''}
+    <div class="alert alert-info">💡 <b>추천:</b> "${keyword}"는 ${main.competition==='높음'?'경쟁 치열 — 틈새 키워드로 트래픽 확보 후 확장하세요.':main.competition==='낮음'?'경쟁 낮음 — 직접 공략 + 광고/SEO 병행 추천합니다.':'중간 경쟁 — 리뷰·상세페이지 품질이 핵심입니다.'} 모바일 비중 ${mr}%이므로 모바일 최적화가 중요합니다.</div>`;
 
-  // ── 바 리스트 ──
-  const maxV = Math.max(...list.map(r=>r.total));
-  document.getElementById('rBarList').innerHTML = list.map((item,i) => `
-    <div class="bar-list-item">
-      <span class="bar-kw">${item.keyword}</span>
-      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(item.total/maxV*100)}%;background:${PALETTES[Math.min(i,5)]}"></div></div>
-      <span class="bar-vol">${item.total.toLocaleString()}</span>
-      <span class="bdg ${compBdgCls(item.competition)}" style="min-width:44px;text-align:center;font-size:11px">${item.competition}</span>
+  // 바 리스트
+  document.getElementById('rBarList').innerHTML=list.map((item,i)=>`
+    <div class="bl-item">
+      <span class="bl-kw">${item.keyword}</span>
+      <div class="bl-track"><div class="bl-fill" style="width:${Math.round(item.total/maxVol*100)}%;background:${BLUES[Math.min(i,5)]}"></div></div>
+      <span class="bl-vol">${item.total.toLocaleString()}</span>
+      <span class="bdg ${compBdg(item.competition)}" style="min-width:44px;text-align:center;font-size:11px">${item.competition}</span>
     </div>`).join('');
 }
 </script>
