@@ -531,7 +531,7 @@ function extractSourcingKws(list){
 }
 
 function render(data){
-  const{keyword,list,shopData,compareData}=data;
+  const{keyword,list,shopData,brandAnalysis,compareData}=data;
   const main=list[0], mr=main.mobileRatio;
   const[sC,sL]=szBdg(main.total);
   const maxVol=Math.max(...list.map(i=>i.total));
@@ -577,12 +577,32 @@ function render(data){
     const medPos=range>0?Math.round((ps.median-ps.min)/range*100):50;
     srcHtml+=`
     <div class="src-price-band">
-      <div class="src-price-title"><i class="ti ti-currency-won" style="font-size:15px;color:var(--blue-mid)"></i>네이버쇼핑 "${keyword}" 가격 분석 <span style="font-size:11px;color:rgba(255,255,255,.35);font-weight:400">(상위 ${ps.count}개 상품 기준)</span></div>
+      <div class="src-price-title"><i class="ti ti-currency-won" style="font-size:15px;color:var(--blue-mid)"></i>네이버쇼핑 "${keyword}" 가격 분석 <span style="font-size:11px;color:rgba(255,255,255,.35);font-weight:400">(조회 상품 ${ps.count}개 · 이상값 제외 기준)</span></div>
       <div class="price-grid">
         <div class="price-card"><div class="price-lbl">최저가</div><div class="price-val">${ps.min.toLocaleString()}원</div><div class="price-sub">시장 최하단</div></div>
         <div class="price-card"><div class="price-lbl">평균가</div><div class="price-val" style="color:var(--blue-mid)">${ps.avg.toLocaleString()}원</div><div class="price-sub">시장 평균</div></div>
         <div class="price-card"><div class="price-lbl">중앙값</div><div class="price-val">${ps.median.toLocaleString()}원</div><div class="price-sub">상위 50% 기준</div></div>
         <div class="price-card"><div class="price-lbl">최고가</div><div class="price-val">${ps.max.toLocaleString()}원</div><div class="price-sub">시장 최상단</div></div>
+      </div>
+      <div id="priceBandWrap_${keyword.replace(/[^a-z0-9]/gi,'_')}" style="margin-top:12px">
+        ${ps.bands?`<div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:6px">가격대별 상품 분포</div>
+        <div style="display:flex;gap:4px;align-items:flex-end;height:40px">
+          ${[
+            {label:'~5만',val:ps.bands.under5k},
+            {label:'5~10만',val:ps.bands.k5to10},
+            {label:'1~2만',val:ps.bands.k10to20},
+            {label:'2~3만',val:ps.bands.k20to30},
+            {label:'3만+',val:ps.bands.over30k},
+          ].map(b=>{
+            const maxB=Math.max(ps.bands.under5k,ps.bands.k5to10,ps.bands.k10to20,ps.bands.k20to30,ps.bands.over30k,1);
+            const h=Math.round(b.val/maxB*36);
+            return `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1">
+              <span style="font-size:9px;color:rgba(255,255,255,.4)">${b.val}</span>
+              <div style="width:100%;height:${h}px;background:rgba(84,174,255,0.6);border-radius:3px 3px 0 0;min-height:${b.val>0?2:0}px"></div>
+              <span style="font-size:9px;color:rgba(255,255,255,.3)">${b.label}</span>
+            </div>`;
+          }).join('')}
+        </div>`:''}
       </div>
       <div class="price-bar-wrap">
         <div class="price-bar-label">가격대 분포</div>
@@ -597,15 +617,31 @@ function render(data){
       </div>
     </div>`;
 
-    if(shopData.brands&&shopData.brands.length){
+    // 주요 브랜드 분석 (브랜드명+키워드 검색 기반)
+    if(brandAnalysis&&brandAnalysis.length){
       srcHtml+=`<div class="src-brand-section">
-        <div class="src-brand-title"><i class="ti ti-award" style="font-size:12px"></i>상위 노출 브랜드 (리뷰순)</div>
+        <div class="src-brand-title"><i class="ti ti-award" style="font-size:12px"></i>주요 브랜드 시장 분석 <span style="font-size:10px;color:var(--ink3);font-weight:400">("브랜드명+${keyword}" 검색 결과 기반)</span></div>
         <div class="brand-grid">
-          ${shopData.brands.map((b,i)=>`<div class="brand-card">
-            <div class="brand-rank-num">${['🥇','🥈','🥉','4위','5위','6위'][i]}</div>
+          ${brandAnalysis.map((b,i)=>`<div class="brand-card" style="${i<3?'border-color:var(--blue);background:var(--blue-bg)':''}">
+            <div class="brand-rank-num">${['🥇','🥈','🥉','4위','5위','6위','7위','8위'][i]||i+1+'위'}</div>
             <div class="brand-name" title="${b.brand}">${b.brand}</div>
             <div class="brand-price">${b.minPrice>0?b.minPrice.toLocaleString()+'원~':'-'}</div>
-            <div class="brand-review">리뷰 ${b.reviewCount.toLocaleString()}개 · ${b.count}개 상품</div>
+            <div class="brand-review">총 ${b.count.toLocaleString()}개 상품 · 평균 ${b.avgPrice>0?b.avgPrice.toLocaleString()+'원':'-'}</div>
+            ${b.topItem?`<div style="font-size:10px;color:var(--ink3);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${b.topItem}">${b.topItem}</div>`:''}
+          </div>`).join('')}
+        </div>
+        <div class="al al-gray" style="margin-top:12px;font-size:11px">📌 상품수가 많을수록 해당 브랜드가 이 카테고리에 적극적으로 진입한 것. 정확한 쇼핑 순위는 <a href="https://search.shopping.naver.com/search/all?query=${encodeURIComponent(keyword)}&sort=rel" target="_blank" style="color:var(--blue)">네이버쇼핑 직접 확인</a> 추천.</div>
+      </div>`;
+    }
+    // 상위 노출 브랜드 (API 기반)
+    if(shopData&&shopData.brands&&shopData.brands.length){
+      srcHtml+=`<div class="src-brand-section" style="border-top:1px solid var(--line2)">
+        <div class="src-brand-title" style="margin-top:16px"><i class="ti ti-shopping-cart" style="font-size:12px"></i>API 검색 결과 상위 노출 <span style="font-size:10px;color:var(--ink3);font-weight:400">(연관성순 정렬 기준)</span></div>
+        <div class="brand-grid">
+          ${shopData.brands.map((b,i)=>`<div class="brand-card">
+            <div class="brand-name" title="${b.brand}">${b.brand}</div>
+            <div class="brand-price">${b.minPrice>0?b.minPrice.toLocaleString()+'원~':'-'}</div>
+            <div class="brand-review">상품 ${b.count}개 · 평균 ${b.avgPrice>0?b.avgPrice.toLocaleString()+'원':'-'}</div>
           </div>`).join('')}
         </div>
       </div>`;

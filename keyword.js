@@ -25,81 +25,182 @@ async function fetchKeywords(kw, key, secret, cid) {
   return (await res.json()).keywordList||[];
 }
 
+
+// 카테고리별 주요 브랜드 목록
+const BRAND_DB = {
+  "물티슈":    ["베베숲","브라운물티슈","하기스","유한킴벌리","보솜이","마미포코","크린베이비","아토팜","네추럴퍼프","리틀라이프","더마앤모어","피죤","세이프가드","아기사랑","코코도르"],
+  "캡슐세제":  ["피죤","퍼실","다우니","에코버","세탁조교","리파인","태평양물산","LG생활건강","애경","P&G"],
+  "세탁세제":  ["피죤","퍼실","아리엘","다우니","비트","해피홈","옥시","LG생활건강","애경","유한양행"],
+  "섬유유연제":["피죤","다우니","퍼실","스너글","베르나르","LG생활건강","애경"],
+  "아기로션":  ["아토팜","베베숲","보솜이","세타필","존슨앤존슨","로션나라","네추럴퍼프","더마앤모어"],
+  "주방세제":  ["자연퐁","트리오","핸드워시","참그린","옥시","LG생활건강","애경","유한락스"],
+  "default":   ["LG생활건강","애경산업","유한킴벌리","피죤","옥시","P&G","존슨앤존슨","한국P&G"],
+};
+
+function getBrandList(kw) {
+  for(const [key, brands] of Object.entries(BRAND_DB)) {
+    if(kw.includes(key) || key==="default") {
+      if(key !== "default") return brands;
+    }
+  }
+  return BRAND_DB.default;
+}
+
+// 브랜드별 네이버쇼핑 데이터 조회
+async function fetchBrandAnalysis(kw, cid, csec) {
+  if(!cid||!csec) return [];
+  
+  // 연관 키워드에서 브랜드처럼 보이는 것 추출 (짧고 한글 고유명사)
+  // + 고정 브랜드 DB에서 이 카테고리 브랜드 가져오기
+  const fixedBrands = getBrandList(kw).slice(0, 8);
+  
+  // 브랜드명 + 키워드로 검색해서 상품수·가격 확인
+  const results = await Promise.allSettled(
+    fixedBrands.map(async (brand) => {
+      const query = `${brand} ${kw}`;
+      const res = await fetch(
+        `https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(query)}&display=10&sort=sim`,
+        {headers:{"X-Naver-Client-Id":cid,"X-Naver-Client-Secret":csec}}
+      );
+      if(!res.ok) return null;
+      const data = await res.json();
+      const items = (data.items||[]).map(i=>({
+        title: i.title.replace(/<[^>]+>/g,""),
+        lprice: Number(i.lprice)||0,
+        mallName: i.mallName||"",
+        image: i.image||"",
+        link: i.link||"",
+      })).filter(i=>i.lprice>500);
+      
+      if(items.length === 0) return null;
+      
+      const prices = items.map(i=>i.lprice).filter(p=>p>0).sort((a,b)=>a-b);
+      return {
+        brand,
+        count: data.total || items.length,
+        productCount: items.length,
+        minPrice: prices.length>0 ? prices[0] : 0,
+        avgPrice: prices.length>0 ? Math.round(prices.reduce((a,b)=>a+b,0)/prices.length) : 0,
+        topItem: items[0]?.title || "",
+        image: items[0]?.image || "",
+        link: items[0]?.link || "",
+      };
+    })
+  );
+  
+  return results
+    .filter(r => r.status==='fulfilled' && r.value)
+    .map(r => r.value)
+    .sort((a,b) => b.count - a.count)
+    .slice(0, 8);
+}
+
 async function fetchShopData(kw) {
   const cid=process.env.NAVER_CLIENT_ID, csec=process.env.NAVER_CLIENT_SECRET;
   if(!cid||!csec) return null;
   try {
-    const res=await fetch(
-      `https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(kw)}&display=40&sort=sim`,
-      {headers:{"X-Naver-Client-Id":cid,"X-Naver-Client-Secret":csec}}
-    );
-    if(!res.ok) return null;
-    const data=await res.json();
+    // 연관성 높은 순 + 낮은가격순 두 번 호출해서 합산
+    const [simRes, lowRes] = await Promise.all([
+      fetch(`https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(kw)}&display=40&sort=sim`,
+        {headers:{"X-Naver-Client-Id":cid,"X-Naver-Client-Secret":csec}}),
+      fetch(`https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(kw)}&display=40&sort=asc`,
+        {headers:{"X-Naver-Client-Id":cid,"X-Naver-Client-Secret":csec}}),
+    ]);
+    if(!simRes.ok) return null;
+    const simData = await simRes.json();
+    const lowData = lowRes.ok ? await lowRes.json() : {items:[]};
 
-    // 이상한 상품 필터링: 가격 너무 낮거나(단품 끼워팔기), 제목이 너무 무관한 것 제거
-    const kwClean = kw.replace(/\s/g,"").toLowerCase();
-    const items=(data.items||[])
-      .filter(item => {
-        const price = Number(item.lprice)||0;
-        const title = item.title.replace(/<[^>]+>/g,"").replace(/\s/g,"").toLowerCase();
-        // 가격 500원 미만 제거 (단품/증정품)
-        if(price > 0 && price < 500) return false;
-        // 제목에 키워드 포함 여부 (느슨하게)
-        return true;
-      })
-      .map(item=>({
-        title: item.title.replace(/<[^>]+>/g,""),
-        brand: item.brand||item.mallName||"-",
-        mallName: item.mallName||"-",
-        lprice: Number(item.lprice)||0,
-        hprice: Number(item.hprice)||0,
-        image: item.image||"",
-        link: item.link||"",
-        category1: item.category1||"",
-        category2: item.category2||"",
-        // 리뷰수 — API 필드 여러 가지 시도
-        reviewCount: Number(item.reviewCount||item.review_count||item.commentCount||0),
-        productId: item.productId||"",
+    // 전체 상품 풀 합산 (중복 productId 제거)
+    const allRaw = [...(simData.items||[]), ...(lowData.items||[])];
+    const seen = new Set();
+    const deduped = allRaw.filter(item => {
+      const key = item.productId || item.link;
+      if(seen.has(key)) return false;
+      seen.add(key); return true;
+    });
+
+    // 매핑 + 필터링 (500원 미만 단품 제거)
+    const items = deduped
+      .filter(item => Number(item.lprice) >= 500)
+      .map(item => ({
+        title:    item.title.replace(/<[^>]+>/g,""),
+        brand:    item.brand || "",
+        mallName: item.mallName || "-",
+        lprice:   Number(item.lprice) || 0,
+        hprice:   Number(item.hprice) || 0,
+        image:    item.image || "",
+        link:     item.link || "",
+        category1: item.category1 || "",
+        category2: item.category2 || "",
+        productId: item.productId || item.link,
       }));
 
-    // 가격 통계 (이상값 제거: Q1~Q3 IQR 방식)
-    const prices = items.map(i=>i.lprice).filter(p=>p>500).sort((a,b)=>a-b);
+    // 가격 통계 — IQR로 이상값 제거
+    const prices = items.map(i=>i.lprice).filter(p=>p>0).sort((a,b)=>a-b);
     let priceStats = null;
     if(prices.length > 0) {
       const q1 = prices[Math.floor(prices.length*0.25)];
       const q3 = prices[Math.floor(prices.length*0.75)];
       const iqr = q3 - q1;
-      // 이상값 제외 (IQR * 1.5 벗어나는 값)
-      const filtered = prices.filter(p => p >= q1-iqr*1.5 && p <= q3+iqr*1.5);
-      const validPrices = filtered.length > 0 ? filtered : prices;
+      const valid = prices.filter(p => p >= Math.max(500, q1-iqr*1.5) && p <= q3+iqr*1.5);
+      const fp = valid.length > 3 ? valid : prices;
       priceStats = {
-        min: Math.min(...validPrices),
-        max: Math.max(...validPrices),
-        avg: Math.round(validPrices.reduce((a,b)=>a+b,0)/validPrices.length),
-        median: validPrices[Math.floor(validPrices.length/2)],
-        count: items.length,
-        filteredCount: validPrices.length,
+        min:    Math.min(...fp),
+        max:    Math.max(...fp),
+        avg:    Math.round(fp.reduce((a,b)=>a+b,0)/fp.length),
+        median: fp[Math.floor(fp.length/2)],
+        count:  items.length,
+        // 가격대 구간별 상품수
+        bands: {
+          under5k:  fp.filter(p=>p<5000).length,
+          k5to10:   fp.filter(p=>p>=5000&&p<10000).length,
+          k10to20:  fp.filter(p=>p>=10000&&p<20000).length,
+          k20to30:  fp.filter(p=>p>=20000&&p<30000).length,
+          over30k:  fp.filter(p=>p>=30000).length,
+        }
       };
     }
 
-    // 브랜드 집계 — mallName 기준 (brand 필드는 종종 비어있음)
-    const brandMap={};
-    items.forEach(item=>{
-      // brand 필드 우선, 없으면 mallName
-      const b = (item.brand && item.brand!=="-") ? item.brand : item.mallName;
-      if(!b||b==="-") return;
-      if(!brandMap[b]) brandMap[b]={brand:b,minPrice:item.lprice||99999999,reviewCount:0,count:0,image:item.image,link:item.link};
+    // 브랜드 집계 — brand 필드 우선, 없으면 mallName
+    const brandMap = {};
+    items.forEach(item => {
+      // brand가 있고 의미있는 경우 우선 사용
+      const b = (item.brand && item.brand.length > 0) ? item.brand : item.mallName;
+      if(!b || b==="-") return;
+      if(!brandMap[b]) brandMap[b] = {
+        brand: b, count: 0,
+        prices: [], categories: new Set(),
+        image: item.image, link: item.link,
+        titles: [],
+      };
       brandMap[b].count++;
-      brandMap[b].reviewCount += item.reviewCount;
-      if(item.lprice>500 && item.lprice<brandMap[b].minPrice) brandMap[b].minPrice=item.lprice;
+      if(item.lprice > 0) brandMap[b].prices.push(item.lprice);
+      if(item.category2) brandMap[b].categories.add(item.category2);
+      if(brandMap[b].titles.length < 2) brandMap[b].titles.push(item.title);
     });
-    const brands=Object.values(brandMap)
-      .filter(b=>b.count>0)
-      .sort((a,b)=>b.count-a.count || b.reviewCount-a.reviewCount)
-      .slice(0,6)
-      .map((b,i)=>({...b,rank:i+1,minPrice:b.minPrice===99999999?0:b.minPrice}));
 
-    return {items:items.slice(0,10), priceStats, brands};
+    const brands = Object.values(brandMap)
+      .sort((a,b) => b.count - a.count)
+      .slice(0, 6)
+      .map((b, i) => {
+        const sp = b.prices.sort((a,c)=>a-c);
+        return {
+          rank: i+1,
+          brand: b.brand,
+          count: b.count,
+          minPrice: sp.length > 0 ? sp[0] : 0,
+          avgPrice: sp.length > 0 ? Math.round(sp.reduce((a,c)=>a+c,0)/sp.length) : 0,
+          categories: [...b.categories].slice(0,2).join(', '),
+          image: b.image,
+          link: b.link,
+          sample: b.titles[0] || "",
+        };
+      });
+
+    // 상위 노출 상품 Top8 (sim 기준)
+    const topItems = items.slice(0, 8);
+
+    return { items: topItems, priceStats, brands };
   } catch(e) { console.error('shopData error:',e.message); return null; }
 }
 
@@ -124,9 +225,11 @@ export default async function handler(req, res) {
   if(!KEY||!SEC||!CID) return res.status(500).json({error:"API 환경변수가 설정되지 않았습니다"});
   try {
     const kwL=kw.replace(/\s/g,"").toLowerCase();
-    const [rawList,shopData]=await Promise.all([
+    const CLIENT_ID=process.env.NAVER_CLIENT_ID, CLIENT_SEC=process.env.NAVER_CLIENT_SECRET;
+    const [rawList,shopData,brandAnalysis]=await Promise.all([
       fetchKeywords(kw,KEY,SEC,CID),
       fetchShopData(kw),
+      fetchBrandAnalysis(kw, CLIENT_ID, CLIENT_SEC),
     ]);
     let related=rawList.filter(item=>isRelated(kw,item.relKeyword||""));
     if(related.length<5) related=rawList.filter(item=>{
@@ -144,6 +247,6 @@ export default async function handler(req, res) {
       const cKws=compare.split(",").map(k=>k.trim()).filter(Boolean).slice(0,4);
       compareData=await fetchMultiple([kw,...cKws],KEY,SEC,CID);
     }
-    return res.status(200).json({keyword:kw,list,shopData,compareData});
+    return res.status(200).json({keyword:kw,list,shopData,brandAnalysis,compareData});
   } catch(e) { return res.status(500).json({error:e.message}); }
 }
