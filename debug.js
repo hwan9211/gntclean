@@ -47,7 +47,7 @@ export default async function handler(req, res) {
       const fmt = d => d.toISOString().slice(0,10);
       // 쇼핑인사이트 키워드 트렌드 API
       const dlRes = await fetch(
-        "https://openapi.naver.com/v1/datalab/shopping/keywords/ratio",
+        "https://openapi.naver.com/v1/datalab/search",
         {
           method: "POST",
           headers: {
@@ -58,8 +58,8 @@ export default async function handler(req, res) {
           body: JSON.stringify({
             startDate: fmt(start),
             endDate: fmt(end),
-            timeUnit: "date",
-            keyword: [{ name: "물티슈", param: ["물티슈"] }]
+            timeUnit: "week",
+            keywordGroups: [{ groupName: "물티슈", keywords: ["물티슈"] }]
           })
         }
       );

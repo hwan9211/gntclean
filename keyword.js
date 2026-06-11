@@ -49,9 +49,12 @@ async function fetchBrandAnalysis(kw, cid, csec) {
   if(!cid||!csec) return [];
   const brands = getBrandList(kw);
   
-  const results = await Promise.allSettled(
-    brands.map(async (brand) => {
-      // "브랜드명 키워드" 로 검색
+  // 5개씩 배치로 나눠서 병렬 호출 (타임아웃 방지)
+  const batch1 = brands.slice(0, 5);
+  const batch2 = brands.slice(5);
+
+  async function fetchOne(brand) {
+    try {
       const q = `${brand} ${kw}`;
       const res = await fetch(
         `https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(q)}&display=10&sort=sim`,
@@ -59,42 +62,52 @@ async function fetchBrandAnalysis(kw, cid, csec) {
       );
       if(!res.ok) return null;
       const data = await res.json();
-      
-      // 실제로 이 브랜드 상품인지 title에서 브랜드명 포함 여부 확인
-      const brandItems = (data.items||[]).filter(item => {
-        const title = item.title.replace(/<[^>]+>/g,"").toLowerCase();
-        return title.includes(brand.toLowerCase());
-      });
-      
-      if(brandItems.length === 0) return null; // 실제 상품 없으면 제외
-      
-      const prices = brandItems
-        .map(i => Number(i.lprice)||0)
-        .filter(p => p > 500)
-        .sort((a,b)=>a-b);
-      
-      // 대표 이미지: 브랜드 상품 중 첫 번째
-      const topItem = brandItems[0];
-      
+      if(!data.total || data.total === 0) return null;
+      const brandItems = (data.items||[]).filter(item =>
+        item.title.replace(/<[^>]+>/g,"").toLowerCase().includes(brand.toLowerCase())
+      );
+      if(brandItems.length === 0) return null;
+      const prices = brandItems.map(i=>Number(i.lprice)||0).filter(p=>p>500).sort((a,b)=>a-b);
       return {
         brand,
-        total: data.total || 0,         // 네이버쇼핑 총 상품수
-        matchCount: brandItems.length,   // 검색된 상품 중 브랜드 확인된 수
-        minPrice: prices.length > 0 ? prices[0] : 0,
-        avgPrice: prices.length > 0 ? Math.round(prices.reduce((a,b)=>a+b,0)/prices.length) : 0,
-        topTitle: topItem ? topItem.title.replace(/<[^>]+>/g,"") : "",
-        image: topItem ? topItem.image : "",
-        link: topItem ? topItem.link : "",
+        total: data.total,
+        minPrice: prices[0]||0,
+        avgPrice: prices.length>0 ? Math.round(prices.reduce((a,b)=>a+b,0)/prices.length) : 0,
+        topTitle: brandItems[0]?.title.replace(/<[^>]+>/g,"")||"",
+        image: brandItems[0]?.image||"",
+        link: brandItems[0]?.link||"",
       };
-    })
-  );
-  
+    } catch { return null; }
+  }
+
+  const r1 = await Promise.all(batch1.map(fetchOne));
+  const r2 = batch2.length > 0 ? await Promise.all(batch2.map(fetchOne)) : [];
+  const results = [...r1, ...r2];
+
   return results
-    .filter(r => r.status==='fulfilled' && r.value && r.value.total > 0)
-    .map(r => r.value)
-    .sort((a,b) => b.total - a.total); // 총 상품수 많은 순
+    .filter(r => r && r.total > 0)
+    .sort((a,b) => b.total - a.total);
 }
 
+
+
+async function fetchTrend(kw, startDate, endDate) {
+  const cid=process.env.NAVER_CLIENT_ID, csec=process.env.NAVER_CLIENT_SECRET;
+  if(!cid||!csec) return null;
+  try {
+    const res=await fetch("https://openapi.naver.com/v1/datalab/search",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","X-Naver-Client-Id":cid,"X-Naver-Client-Secret":csec},
+      body:JSON.stringify({
+        startDate, endDate, timeUnit:"week",
+        keywordGroups:[{groupName:kw, keywords:[kw]}]
+      }),
+    });
+    if(!res.ok) return null;
+    const data = await res.json();
+    return data.results?.[0]?.data || null;
+  } catch { return null; }
+}
 
 async function fetchShopData(kw) {
   const cid=process.env.NAVER_CLIENT_ID, csec=process.env.NAVER_CLIENT_SECRET;
@@ -227,10 +240,11 @@ export default async function handler(req, res) {
   try {
     const kwL=kw.replace(/\s/g,"").toLowerCase();
     const CLIENT_ID=process.env.NAVER_CLIENT_ID, CLIENT_SEC=process.env.NAVER_CLIENT_SECRET;
-    const [rawList,shopData,brandAnalysis]=await Promise.all([
+    const [rawList,shopData,brandAnalysis,trendData]=await Promise.all([
       fetchKeywords(kw,KEY,SEC,CID),
       fetchShopData(kw),
       fetchBrandAnalysis(kw, CLIENT_ID, CLIENT_SEC),
+      fetchTrend(kw, new Date(Date.now()-30*24*60*60*1000).toISOString().slice(0,10), new Date().toISOString().slice(0,10)),
     ]);
     let related=rawList.filter(item=>isRelated(kw,item.relKeyword||""));
     if(related.length<5) related=rawList.filter(item=>{
@@ -248,6 +262,6 @@ export default async function handler(req, res) {
       const cKws=compare.split(",").map(k=>k.trim()).filter(Boolean).slice(0,4);
       compareData=await fetchMultiple([kw,...cKws],KEY,SEC,CID);
     }
-    return res.status(200).json({keyword:kw,list,shopData,brandAnalysis,compareData});
+    return res.status(200).json({keyword:kw,list,shopData,brandAnalysis,trendData,compareData});
   } catch(e) { return res.status(500).json({error:e.message}); }
 }
