@@ -26,74 +26,75 @@ async function fetchKeywords(kw, key, secret, cid) {
 }
 
 
-// 카테고리별 주요 브랜드 목록
+// 카테고리별 주요 브랜드 DB
 const BRAND_DB = {
-  "물티슈":    ["베베숲","브라운물티슈","하기스","유한킴벌리","보솜이","마미포코","크린베이비","아토팜","네추럴퍼프","리틀라이프","더마앤모어","피죤","세이프가드","아기사랑","코코도르"],
-  "캡슐세제":  ["피죤","퍼실","다우니","에코버","세탁조교","리파인","태평양물산","LG생활건강","애경","P&G"],
-  "세탁세제":  ["피죤","퍼실","아리엘","다우니","비트","해피홈","옥시","LG생활건강","애경","유한양행"],
-  "섬유유연제":["피죤","다우니","퍼실","스너글","베르나르","LG생활건강","애경"],
-  "아기로션":  ["아토팜","베베숲","보솜이","세타필","존슨앤존슨","로션나라","네추럴퍼프","더마앤모어"],
-  "주방세제":  ["자연퐁","트리오","핸드워시","참그린","옥시","LG생활건강","애경","유한락스"],
-  "default":   ["LG생활건강","애경산업","유한킴벌리","피죤","옥시","P&G","존슨앤존슨","한국P&G"],
+  "물티슈":    ["베베숲","브라운물티슈","하기스","유한킴벌리","보솜이","마미포코","크린베이비","아토팜","네추럴퍼프","더마앤모어"],
+  "캡슐세제":  ["피죤","퍼실","다우니","에코버","리파인","세탁조교","너무달콤","버블클린"],
+  "세탁세제":  ["피죤","퍼실","아리엘","비트","해피홈","옥시","라벤더","제온"],
+  "섬유유연제":["피죤","다우니","퍼실","스너글","베르나르","샤프란"],
+  "아기로션":  ["아토팜","베베숲","보솜이","세타필","존슨","네추럴퍼프","더마앤모어"],
+  "주방세제":  ["자연퐁","트리오","참그린","옥시","퐁퐁","레몬에이드"],
+  "default":   ["LG생활건강","애경","유한킴벌리","피죤","옥시"],
 };
 
 function getBrandList(kw) {
   for(const [key, brands] of Object.entries(BRAND_DB)) {
-    if(kw.includes(key) || key==="default") {
-      if(key !== "default") return brands;
-    }
+    if(kw.includes(key)) return brands;
   }
   return BRAND_DB.default;
 }
 
-// 브랜드별 네이버쇼핑 데이터 조회
+// 브랜드별 시장 분석 — 브랜드명으로 직접 검색해 total 수집
 async function fetchBrandAnalysis(kw, cid, csec) {
   if(!cid||!csec) return [];
+  const brands = getBrandList(kw);
   
-  // 연관 키워드에서 브랜드처럼 보이는 것 추출 (짧고 한글 고유명사)
-  // + 고정 브랜드 DB에서 이 카테고리 브랜드 가져오기
-  const fixedBrands = getBrandList(kw).slice(0, 8);
-  
-  // 브랜드명 + 키워드로 검색해서 상품수·가격 확인
   const results = await Promise.allSettled(
-    fixedBrands.map(async (brand) => {
-      const query = `${brand} ${kw}`;
+    brands.map(async (brand) => {
+      // "브랜드명 키워드" 로 검색
+      const q = `${brand} ${kw}`;
       const res = await fetch(
-        `https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(query)}&display=10&sort=sim`,
+        `https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(q)}&display=10&sort=sim`,
         {headers:{"X-Naver-Client-Id":cid,"X-Naver-Client-Secret":csec}}
       );
       if(!res.ok) return null;
       const data = await res.json();
-      const items = (data.items||[]).map(i=>({
-        title: i.title.replace(/<[^>]+>/g,""),
-        lprice: Number(i.lprice)||0,
-        mallName: i.mallName||"",
-        image: i.image||"",
-        link: i.link||"",
-      })).filter(i=>i.lprice>500);
       
-      if(items.length === 0) return null;
+      // 실제로 이 브랜드 상품인지 title에서 브랜드명 포함 여부 확인
+      const brandItems = (data.items||[]).filter(item => {
+        const title = item.title.replace(/<[^>]+>/g,"").toLowerCase();
+        return title.includes(brand.toLowerCase());
+      });
       
-      const prices = items.map(i=>i.lprice).filter(p=>p>0).sort((a,b)=>a-b);
+      if(brandItems.length === 0) return null; // 실제 상품 없으면 제외
+      
+      const prices = brandItems
+        .map(i => Number(i.lprice)||0)
+        .filter(p => p > 500)
+        .sort((a,b)=>a-b);
+      
+      // 대표 이미지: 브랜드 상품 중 첫 번째
+      const topItem = brandItems[0];
+      
       return {
         brand,
-        count: data.total || items.length,
-        productCount: items.length,
-        minPrice: prices.length>0 ? prices[0] : 0,
-        avgPrice: prices.length>0 ? Math.round(prices.reduce((a,b)=>a+b,0)/prices.length) : 0,
-        topItem: items[0]?.title || "",
-        image: items[0]?.image || "",
-        link: items[0]?.link || "",
+        total: data.total || 0,         // 네이버쇼핑 총 상품수
+        matchCount: brandItems.length,   // 검색된 상품 중 브랜드 확인된 수
+        minPrice: prices.length > 0 ? prices[0] : 0,
+        avgPrice: prices.length > 0 ? Math.round(prices.reduce((a,b)=>a+b,0)/prices.length) : 0,
+        topTitle: topItem ? topItem.title.replace(/<[^>]+>/g,"") : "",
+        image: topItem ? topItem.image : "",
+        link: topItem ? topItem.link : "",
       };
     })
   );
   
   return results
-    .filter(r => r.status==='fulfilled' && r.value)
+    .filter(r => r.status==='fulfilled' && r.value && r.value.total > 0)
     .map(r => r.value)
-    .sort((a,b) => b.count - a.count)
-    .slice(0, 8);
+    .sort((a,b) => b.total - a.total); // 총 상품수 많은 순
 }
+
 
 async function fetchShopData(kw) {
   const cid=process.env.NAVER_CLIENT_ID, csec=process.env.NAVER_CLIENT_SECRET;
